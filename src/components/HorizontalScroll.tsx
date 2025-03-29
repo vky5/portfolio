@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
+
 // Dynamically import slides
 // this loads components lazily (only when needed) improving performance
 // nextjs uses SSR by default but dynamics imports disables ssr for these slides
@@ -12,6 +13,7 @@ const HomePage = dynamic(() => import("./HomeSlide"));
 const BlogsSlide = dynamic(() => import("./BlogsSlide"));
 const ProjectsSlide = dynamic(() => import("./ProjectsSlide"));
 const SkillsSlide = dynamic(() => import("./SkillsSlide"));
+import Sidebar from "./Sidebar";
 
 // import Progressbar from "./Progressbar";
 
@@ -40,36 +42,14 @@ function HorizontalScroll() {
       const offset =
         slideElement.offsetLeft -
         container.offsetWidth / 2 +
-        slideElement.offsetWidth/5;
+        slideElement.offsetWidth/7;
       container.scrollTo({ left: offset, behavior: "smooth" });
     }
   };
 
   return (
     <div className="flex w-full h-full">
-      {/* Navigation Section */}
-      <section className="w-1/4 bg-gradient-to-r from-[#6A0DAD] to-[#EDEDED]">
-        <ul>
-          <li onClick={() => scrollToSlide("home")} className="cursor-pointer">
-            Home
-          </li>
-          <li onClick={() => scrollToSlide("blogs")} className="cursor-pointer">
-            Blogs
-          </li>
-          <li
-            onClick={() => scrollToSlide("projects")}
-            className="cursor-pointer"
-          >
-            Projects
-          </li>
-          <li
-            onClick={() => scrollToSlide("skills")}
-            className="cursor-pointer"
-          >
-            Skills
-          </li>
-        </ul>
-      </section>
+      <Sidebar scrollToSlide={scrollToSlide} />
 
       {/* Slides Section */}
       <section
