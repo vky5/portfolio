@@ -25,7 +25,7 @@ export default function ContactSlide() {
         transition={{ duration: 0.8 }}
       >
         <h1 className="text-4xl md:text-6xl font-light text-gray-800 mb-4">
-          Let's <span className="text-orange-500">Build</span>
+          Let&#39;s <span className="text-orange-500">Build</span>
         </h1>
         <p className="text-lg text-gray-600">
           Ready to architect scalable solutions? Reach out below!
