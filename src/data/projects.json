@@ -1,0 +1,53 @@
+[
+  {
+    "id": "1",
+    "title": "Multi-Cloud Platform",
+    "year": "2024",
+    "description": "Designed and implemented a multi-cloud platform serving 10M+ requests/day.",
+    "tags": [
+      "Kubernetes",
+      "Terraform",
+      "AWS",
+      "GCP",
+      "Istio"
+    ],
+    "githubLink": "https://github.com/vky5",
+    "liveLink": "",
+    "blogLink": "http://localhost:3000/blog/ddia",
+    "icon": "Cloud"
+  },
+  {
+    "id": "2",
+    "title": "Microservices Migration",
+    "year": "2023",
+    "description": "Led migration from monolith to microservices architecture.",
+    "tags": [
+      "Docker",
+      "Kubernetes",
+      "Redis",
+      "PostgreSQL",
+      "Kafka"
+    ],
+    "githubLink": "https://github.com/vky5",
+    "liveLink": "",
+    "blogLink": "",
+    "icon": "Server"
+  },
+  {
+    "id": "3",
+    "title": "CI/CD Pipeline Automation",
+    "year": "2023",
+    "description": "Built comprehensive DevOps pipeline reducing deployment time.",
+    "tags": [
+      "Jenkins",
+      "GitLab CI",
+      "Ansible",
+      "Prometheus",
+      "Grafana"
+    ],
+    "githubLink": "https://github.com/vky5",
+    "liveLink": "",
+    "blogLink": "",
+    "icon": "Briefcase"
+  }
+]

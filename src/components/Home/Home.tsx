@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Badge } from "@/components/ui/badge"
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 export default function HomeSlide() {
   const skills = [
@@ -11,7 +11,7 @@ export default function HomeSlide() {
     "Microservices",
     "DevOps",
     "Full Stack",
-  ]
+  ];
 
   return (
     <div className="grid md:grid-cols-2 gap-8 md:gap-16 h-full items-center">
@@ -29,14 +29,18 @@ export default function HomeSlide() {
           transition={{ duration: 2, repeat: Infinity }}
         />
 
+        <h2 className="text-xl md:text-2xl font-light text-orange-500 mb-2">
+          Hello, I&apos;m Vaibhav
+        </h2>
         <h1 className="text-4xl md:text-7xl font-light text-gray-800 mb-6 leading-tight">
-          Platform
+          Software
           <br />
           <span className="text-orange-500">Engineer</span>
         </h1>
 
         <p className="text-lg text-gray-600 leading-relaxed">
-          Building scalable infrastructure and distributed systems that power modern applications.
+          Building scalable infrastructure and distributed systems that power
+          modern applications.
         </p>
       </motion.div>
 
@@ -49,8 +53,10 @@ export default function HomeSlide() {
       >
         <p className="text-lg text-gray-600 leading-relaxed mb-8">
           I specialize in{" "}
-          <span className="text-orange-500 font-medium">system design</span>, DevOps practices, and full-stack
-          development. From microservices architecture to cloud-native solutions, I architect systems that scale.
+          <span className="text-orange-500 font-medium">system design</span>,
+          DevOps practices, and full-stack development. From microservices
+          architecture to cloud-native solutions, I architect systems that
+          scale.
         </p>
 
         <motion.div
@@ -66,7 +72,10 @@ export default function HomeSlide() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.8 + index * 0.1 }}
             >
-              <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-200">
+              <Badge
+                variant="secondary"
+                className="bg-orange-100 text-orange-700 hover:bg-orange-200"
+              >
                 {skill}
               </Badge>
             </motion.div>
@@ -74,5 +83,5 @@ export default function HomeSlide() {
         </motion.div>
       </motion.div>
     </div>
-  )
+  );
 }
