@@ -22,12 +22,20 @@ export default function HomeSlide() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2, duration: 0.8 }}
       >
-        {/* Pulsing Dot */}
-        <motion.div
-          className="absolute -right-4 md:-right-12 top-8 w-6 h-6 bg-orange-400 rounded-full"
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
+        {/* Pulsing Dot and Crossing Line */}
+        <div className="absolute -right-4 md:-right-12 top-8 z-0">
+          <motion.div
+            className="w-6 h-6 bg-orange-400 rounded-full relative z-10"
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute left-1/2 top-[-200px] bottom-[-200px] w-px bg-gradient-to-b from-transparent via-orange-300 to-transparent -translate-x-1/2 z-0"
+            initial={{ scaleY: 0 }}
+            animate={{ scaleY: 1 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+          />
+        </div>
 
         <h2 className="text-xl md:text-2xl font-light text-orange-500 mb-2">
           Hello, I&apos;m Vaibhav

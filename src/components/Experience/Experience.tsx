@@ -61,7 +61,7 @@ export default function ExperienceSlide() {
 
           <div className="relative pl-4">
             {/* Vertical Line */}
-            <div className="absolute left-[25px] top-0 bottom-2 w-px bg-gradient-to-b from-orange-300 via-orange-300 to-transparent dark:from-orange-700 dark:via-orange-700" />
+            <div className="absolute left-[24px] top-0 bottom-2 w-px bg-gradient-to-b from-orange-300 via-orange-300 to-transparent dark:from-orange-700 dark:via-orange-700" />
 
             {/* Work Section */}
             {works.length > 0 && (
