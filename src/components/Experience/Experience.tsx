@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Terminal, Code, Cpu } from "lucide-react";
 
 interface Job {
+  _id?: string;
   id: string;
   type?: "work" | "achievement";
   role: string;
@@ -25,14 +26,14 @@ export default function ExperienceSlide() {
       .then((res) => res.json())
       .then((data: Job[]) => {
         setExperience(data);
-        if (data.length > 0) setActiveId(data[0].id);
+        if (data.length > 0) setActiveId(data[0]._id || data[0].id);
       })
       .catch((err) => console.error(err));
   }, []);
 
   const works = experience.filter((j) => j.type === "work" || !j.type);
   const achievements = experience.filter((j) => j.type === "achievement");
-  const activeItem = experience.find((e) => e.id === activeId);
+  const activeItem = experience.find((e) => (e._id || e.id) === activeId);
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 font-mono">
@@ -42,7 +43,7 @@ export default function ExperienceSlide() {
         className="text-center mb-12"
       >
         <h1 className="text-4xl md:text-6xl font-light text-foreground mb-4">
-          <span className="text-orange-500">./experience</span>
+          <span className="text-primary">./experience</span>
         </h1>
         <div className="flex justify-center items-center gap-2 text-muted-foreground">
           <Terminal className="w-4 h-4" />
@@ -61,7 +62,7 @@ export default function ExperienceSlide() {
 
           <div className="relative pl-4">
             {/* Vertical Line */}
-            <div className="absolute left-[24px] top-0 bottom-2 w-px bg-gradient-to-b from-orange-300 via-orange-300 to-transparent dark:from-orange-700 dark:via-orange-700" />
+            <div className="absolute left-[24px] top-0 bottom-2 w-px bg-gradient-to-b from-primary/50 via-primary/30 to-transparent" />
 
             {/* Work Section */}
             {works.length > 0 && (
@@ -71,10 +72,10 @@ export default function ExperienceSlide() {
                 </div>
                 <div className="space-y-4">
                   {works.map((job) => (
-                    <div key={job.id} className="relative group">
+                    <div key={job._id || job.id} className="relative group">
                       {/* Timeline Dot */}
                       <div
-                        className={`absolute left-[4px] top-3 w-2.5 h-2.5 rounded-full border-2 transition-colors z-10 ${activeId === job.id ? "bg-orange-500 border-orange-500" : "bg-background border-muted-foreground group-hover:border-orange-400"}`}
+                        className={`absolute left-[4px] top-3 w-2.5 h-2.5 rounded-full border-2 transition-colors z-10 ${activeId === job._id || activeId === job.id ? "bg-primary border-primary shadow-[0_0_8px_rgba(255,165,0,0.5)]" : "bg-background border-muted-foreground group-hover:border-primary/50"}`}
                       />
 
                       <motion.div
@@ -82,22 +83,22 @@ export default function ExperienceSlide() {
                         animate={{ opacity: 1, x: 0 }}
                         className={`
                                 ml-8 flex items-start gap-3 p-3 rounded cursor-pointer transition-all border border-transparent
-                                ${
-                                  activeId === job.id
-                                    ? "bg-orange-500/10 border-orange-500/20"
-                                    : "hover:bg-muted"
-                                }
-                            `}
-                        onClick={() => setActiveId(job.id)}
+                                  ${
+                                    activeId === job._id || activeId === job.id
+                                      ? "bg-primary/10 border-primary/20"
+                                      : "hover:bg-white/5"
+                                  }
+                             `}
+                        onClick={() => setActiveId(job._id || job.id)}
                       >
                         <div className="flex flex-col gap-0.5 w-full overflow-hidden">
                           <span
-                            className={`text-[10px] uppercase tracking-wider ${activeId === job.id ? "text-orange-400" : "text-muted-foreground"}`}
+                            className={`text-[10px] uppercase tracking-wider ${activeId === job._id || activeId === job.id ? "text-primary" : "text-muted-foreground"}`}
                           >
                             {job.period}
                           </span>
                           <span
-                            className={`font-bold text-sm truncate ${activeId === job.id ? "text-orange-500" : "text-foreground"}`}
+                            className={`font-bold text-sm truncate ${activeId === job._id || activeId === job.id ? "text-primary" : "text-foreground"}`}
                           >
                             {job.company}
                           </span>
@@ -120,33 +121,33 @@ export default function ExperienceSlide() {
                 </div>
                 <div className="space-y-4">
                   {achievements.map((item) => (
-                    <div key={item.id} className="relative group">
+                    <div key={item._id || item.id} className="relative group">
                       {/* Timeline Dot */}
                       <div
-                        className={`absolute left-[4px] top-3 w-2.5 h-2.5 rounded-full border-2 transition-colors z-10 ${activeId === item.id ? "bg-yellow-500 border-yellow-500" : "bg-background border-muted-foreground group-hover:border-yellow-400"}`}
+                        className={`absolute left-[4px] top-3 w-2.5 h-2.5 rounded-full border-2 transition-colors z-10 ${activeId === item._id || activeId === item.id ? "bg-primary border-primary shadow-[0_0_8px_rgba(255,165,0,0.5)]" : "bg-background border-muted-foreground group-hover:border-primary/50"}`}
                       />
 
                       <motion.div
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         className={`
-                                ml-8 flex items-start gap-3 p-3 rounded cursor-pointer transition-all border border-transparent
-                                ${
-                                  activeId === item.id
-                                    ? "bg-yellow-500/10 border-yellow-500/20"
-                                    : "hover:bg-muted"
-                                }
-                            `}
-                        onClick={() => setActiveId(item.id)}
+                                 ml-8 flex items-start gap-3 p-3 rounded cursor-pointer transition-all border border-transparent
+                                 ${
+                                   activeId === item._id || activeId === item.id
+                                     ? "bg-primary/10 border-primary/20"
+                                     : "hover:bg-white/5"
+                                 }
+                             `}
+                        onClick={() => setActiveId(item._id || item.id)}
                       >
                         <div className="flex flex-col gap-0.5 w-full overflow-hidden">
                           <span
-                            className={`text-[10px] uppercase tracking-wider ${activeId === item.id ? "text-yellow-400" : "text-muted-foreground"}`}
+                            className={`text-[10px] uppercase tracking-wider ${activeId === item._id || activeId === item.id ? "text-primary" : "text-muted-foreground"}`}
                           >
                             {item.period}
                           </span>
                           <span
-                            className={`font-bold text-sm truncate ${activeId === item.id ? "text-yellow-500" : "text-foreground"}`}
+                            className={`font-bold text-sm truncate ${activeId === item._id || activeId === item.id ? "text-primary" : "text-foreground"}`}
                           >
                             {item.role}
                           </span>
@@ -167,17 +168,17 @@ export default function ExperienceSlide() {
         <div className="md:col-span-8">
           {activeItem && (
             <motion.div
-              key={activeItem.id}
+              key={activeItem._id || activeItem.id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4 }}
               className={`bg-zinc-950 p-6 rounded-lg border shadow-xl font-mono relative overflow-hidden min-h-[400px] ${activeItem.type === "achievement" ? "border-yellow-900/50 text-yellow-100" : "border-zinc-800 text-green-400"}`}
             >
               {/* Fake Menu Bar */}
-              <div className="absolute top-0 left-0 right-0 h-8 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 space-x-2">
-                <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                <div className="w-3 h-3 rounded-full bg-green-500/80" />
+              <div className="absolute top-0 left-0 right-0 h-8 bg-black/40 border-b border-white/5 flex items-center px-4 space-x-2">
+                <div className="w-3 h-3 rounded-full bg-red-500/40" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/40" />
+                <div className="w-3 h-3 rounded-full bg-green-500/40" />
                 <div className="ml-4 text-xs text-zinc-500 flex items-center gap-1">
                   <Cpu className="w-3 h-3" />
                   {activeItem.company
@@ -195,7 +196,7 @@ export default function ExperienceSlide() {
                     {activeItem.type === "achievement" ? "achievement" : "role"}
                   </span>{" "}
                   ={" "}
-                  <span className="text-orange-300">
+                  <span className="text-primary/80">
                     &quot;{activeItem.role}&quot;
                   </span>
                   ;
@@ -208,7 +209,7 @@ export default function ExperienceSlide() {
                       : "company"}
                   </span>{" "}
                   ={" "}
-                  <span className="text-orange-300">
+                  <span className="text-primary/80">
                     &quot;{activeItem.company}&quot;
                   </span>
                   ;
@@ -236,7 +237,7 @@ export default function ExperienceSlide() {
                     <span className="text-yellow-400">highlights</span> = [
                     {activeItem.highlights.map((h, i) => (
                       <div key={i} className="pl-4">
-                        <span className="text-orange-300">&quot;{h}&quot;</span>
+                        <span className="text-primary/70">&quot;{h}&quot;</span>
                         <span className="text-zinc-500">,</span>
                       </div>
                     ))}
@@ -252,7 +253,7 @@ export default function ExperienceSlide() {
                     <span className="text-zinc-400">return</span> [
                     <div className="pl-4 flex flex-wrap gap-2 py-2">
                       {activeItem.skills?.map((skill, i) => (
-                        <span key={i} className="text-orange-300">
+                        <span key={i} className="text-primary">
                           &quot;{skill}&quot;
                           <span className="text-zinc-500">,</span>
                         </span>

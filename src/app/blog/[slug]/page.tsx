@@ -36,15 +36,15 @@ export default function BlogPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-950">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (!blog) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-950">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <h1 className="text-2xl font-bold text-foreground mb-4">
           Blog Post Not Found
         </h1>
@@ -63,7 +63,7 @@ export default function BlogPage() {
 
   // Fallback for external
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-950">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
       <p className="text-muted-foreground mb-4">Redirecting...</p>
       <Button onClick={() => (window.location.href = blog.externalLink || "/")}>
         Click if not redirected

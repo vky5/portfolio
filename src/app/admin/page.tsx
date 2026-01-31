@@ -75,14 +75,14 @@ export default function AdminPage() {
   if (isAuthenticated) {
     return (
       <div className="min-h-screen bg-background p-4 md:p-8">
-        <div className="absolute top-4 right-4 z-50">
+        {/* <div className="absolute top-4 right-4 z-50">
           <ModeToggle />
-        </div>
+        </div> */}
         <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 mt-12 md:mt-0">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-card p-6 rounded-lg border border-border shadow-sm gap-4">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
-                <ShieldCheck className="w-8 h-8 text-green-600 dark:text-green-400" />
+              <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
+                <ShieldCheck className="w-8 h-8 text-primary shadow-[0_0_10px_rgba(255,165,0,0.3)]" />
               </div>
               <div>
                 <h1 className="text-xl md:text-2xl font-bold text-foreground">
@@ -152,7 +152,7 @@ export default function AdminPage() {
                   <div className="flex flex-col gap-2">
                     <Button
                       onClick={() => router.push("/admin/editor")}
-                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_15px_rgba(255,165,0,0.3)] transition-all"
                     >
                       Open Content Editor
                     </Button>
@@ -194,14 +194,14 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 flex items-center justify-center p-4">
-      <div className="absolute top-4 right-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      {/* <div className="absolute top-4 right-4">
         <ModeToggle />
-      </div>
-      <Card className="w-full max-w-md border-0 shadow-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-lg">
-        <CardHeader className="space-y-1 text-center pb-8 border-b border-gray-100 dark:border-zinc-800/50">
-          <div className="mx-auto w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mb-4">
-            <Lock className="w-6 h-6 text-orange-600 dark:text-orange-500" />
+      </div> */}
+      <Card className="w-full max-w-md border border-white/5 shadow-2xl bg-card/80 backdrop-blur-xl">
+        <CardHeader className="space-y-1 text-center pb-8 border-b border-border">
+          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4 border border-primary/20">
+            <Lock className="w-6 h-6 text-primary shadow-[0_0_10px_rgba(255,165,0,0.3)]" />
           </div>
           <CardTitle className="text-2xl font-bold text-foreground">
             Admin Access
@@ -239,7 +239,7 @@ export default function AdminPage() {
             )}
             <Button
               type="submit"
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold transition-all duration-300"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(255,165,0,0.3)]"
             >
               Authenticate & Generate Token
             </Button>

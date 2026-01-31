@@ -78,7 +78,7 @@ export default function BlogsSlide() {
       case "native-book":
         return "text-blue-600 dark:text-blue-400";
       default:
-        return "text-orange-500";
+        return "text-primary";
     }
   };
 
@@ -100,7 +100,7 @@ export default function BlogsSlide() {
         transition={{ duration: 0.8 }}
       >
         <h1 className="text-4xl md:text-6xl font-light text-foreground mb-4">
-          <span className="text-orange-500">./blog</span>
+          <span className="text-primary">./blog</span>
         </h1>
         <div className="flex justify-center items-center gap-2 text-muted-foreground mb-4">
           <Terminal className="w-4 h-4" />
@@ -123,10 +123,10 @@ export default function BlogsSlide() {
               key={tab.id}
               variant={filter === tab.id ? "default" : "outline"}
               onClick={() => setFilter(tab.id as BlogType | "all")}
-              className={`rounded-full ${
+              className={`rounded-full transition-all ${
                 filter === tab.id
-                  ? "bg-gray-900 text-white hover:bg-gray-800 dark:bg-orange-600 dark:text-white"
-                  : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                  ? "bg-primary text-primary-foreground shadow-[0_0_15px_rgba(255,165,0,0.3)]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
               }`}
             >
               {tab.label}
@@ -142,30 +142,39 @@ export default function BlogsSlide() {
 
           return (
             <motion.div
-              key={index}
+              key={blog.id}
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 + index * 0.1, duration: 0.8 }}
             >
-              <Card className="h-full hover:shadow-lg transition-shadow duration-300 border-0 bg-white/50 dark:bg-card/50 backdrop-blur-sm">
+              <Card className="h-full hover:shadow-2xl transition-all duration-300 border border-white/5 bg-card/40 backdrop-blur-md hover:bg-card/60 overflow-hidden">
+                {blog.coverImage && (
+                  <div className="w-full h-40 overflow-hidden border-b border-white/5">
+                    <img
+                      src={blog.coverImage}
+                      alt={blog.title}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                    />
+                  </div>
+                )}
                 <CardContent className="p-6 h-full flex flex-col relative group">
                   {isAdmin && (
                     <Button
                       size="icon"
                       variant="secondary"
-                      className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white shadow-sm"
+                      className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background shadow-sm border border-white/10"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push(`/admin/editor?slug=${blog.id}`);
                       }}
                     >
-                      <Pencil className="w-4 h-4 text-gray-700" />
+                      <Pencil className="w-4 h-4 text-foreground" />
                     </Button>
                   )}
                   <div className="flex justify-between items-start mb-3">
                     <Badge
                       variant="outline"
-                      className="text-xs border-orange-200 text-orange-700 dark:border-orange-800 dark:text-orange-400"
+                      className="text-xs border-primary/20 text-primary bg-primary/5"
                     >
                       {blog.category}
                     </Badge>
@@ -176,19 +185,19 @@ export default function BlogsSlide() {
                       <span>{blog.readTime}</span>
                     </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-card-foreground mb-3">
+                  <h3 className="text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
                     {blog.title}
                   </h3>
                   <p className="text-muted-foreground leading-relaxed mb-4 flex-grow line-clamp-3">
                     {blog.excerpt}
                   </p>
                   <div className="flex justify-between items-center mt-auto">
-                    <span className="text-sm text-orange-500 font-medium">
+                    <span className="text-sm text-primary/80 font-medium">
                       {blog.date}
                     </span>
                     <Button
                       variant="ghost"
-                      className="text-orange-500 hover:text-orange-600 p-0 text-sm hover:bg-transparent"
+                      className="text-primary hover:text-primary hover:bg-primary/10 p-0 px-2 text-sm"
                       onClick={() => handleReadMore(blog)}
                     >
                       Read More →

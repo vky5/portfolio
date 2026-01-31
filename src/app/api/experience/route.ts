@@ -1,67 +1,56 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
-
-const DATA_FILE_PATH = path.join(process.cwd(), "src/data/experience.json");
-
-async function ensureFile() {
-  try {
-    await fs.access(DATA_FILE_PATH);
-  } catch {
-    await fs.writeFile(DATA_FILE_PATH, "[]", "utf-8");
-  }
-}
+import dbConnect from "@/lib/db";
+import Experience from "@/models/Experience";
 
 export async function GET() {
-  await ensureFile();
+  await dbConnect();
   try {
-    const data = await fs.readFile(DATA_FILE_PATH, "utf-8");
-    return NextResponse.json(JSON.parse(data));
-  } catch {
+    const experiences = await Experience.find({}).sort({ period: -1 });
+    return NextResponse.json(experiences);
+  } catch (error) {
+    console.error("Error fetching experiences:", error);
     return NextResponse.json([], { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
-  await ensureFile();
+  await dbConnect();
   try {
-    const newEntry = await request.json();
-    const fileContent = await fs.readFile(DATA_FILE_PATH, "utf-8");
-    const data = JSON.parse(fileContent);
+    const data = await request.json();
+    const { _id, ...rest } = data;
 
-    // If ID exists, update
-    if (newEntry.id) {
-      const index = data.findIndex((p: { id: string }) => p.id === newEntry.id);
-      if (index > -1) {
-        data[index] = newEntry;
-      } else {
-        data.unshift({ ...newEntry, id: Date.now().toString() });
+    if (_id) {
+      const updatedExperience = await Experience.findByIdAndUpdate(_id, rest, {
+        new: true,
+      });
+      if (!updatedExperience) {
+        return NextResponse.json(
+          { success: false, message: "Experience not found" },
+          { status: 404 },
+        );
       }
     } else {
-      // Create new
-      data.unshift({ ...newEntry, id: Date.now().toString() });
+      await Experience.create(rest);
     }
 
-    await fs.writeFile(DATA_FILE_PATH, JSON.stringify(data, null, 2), "utf-8");
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error("Error saving experience:", error);
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }
 
 export async function DELETE(request: Request) {
+  await dbConnect();
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ success: false }, { status: 400 });
 
-    const fileContent = await fs.readFile(DATA_FILE_PATH, "utf-8");
-    let data = JSON.parse(fileContent);
-    data = data.filter((p: { id: string }) => p.id !== id);
-
-    await fs.writeFile(DATA_FILE_PATH, JSON.stringify(data, null, 2), "utf-8");
+    await Experience.findByIdAndDelete(id);
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error("Error deleting experience:", error);
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }

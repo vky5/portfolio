@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ModeToggle } from "@/components/ThemeToggle";
 import {
   Bold,
   Italic,
@@ -32,6 +31,12 @@ import {
   ArrowLeft,
   Plus,
   Link as LinkIcon,
+  Upload,
+  X,
+  Image as ImageIcon,
+  FileText,
+  Book,
+  Loader2,
 } from "lucide-react";
 
 interface Chapter {
@@ -59,6 +64,9 @@ export default function Editor() {
   // Book Mode State
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [activeChapterIndex, setActiveChapterIndex] = useState(0);
+  const [coverImage, setCoverImage] = useState("");
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isUploadingEditorImage, setIsUploadingEditorImage] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -74,7 +82,7 @@ export default function Editor() {
     editorProps: {
       attributes: {
         class:
-          "prose prose-lg prose-orange dark:prose-invert max-w-none focus:outline-none min-h-[500px]",
+          "prose prose-lg prose-orange dark:prose-invert max-w-none focus:outline-none min-h-[500px] [&_img]:mx-auto [&_img]:rounded-xl [&_img]:my-8",
       },
     },
     immediatelyRender: false,
@@ -104,6 +112,7 @@ export default function Editor() {
             setType(blog.type);
             setExcerpt(blog.excerpt || "");
             setExternalLink(blog.externalLink || "");
+            setCoverImage(blog.coverImage || blog.image || "");
 
             if (blog.type === "native-book" && blog.bookData) {
               setChapters(blog.bookData.chapters);
@@ -195,6 +204,7 @@ export default function Editor() {
       readTime: "5 min read", // Placeholder
       category: "Tech", // Placeholder
       type,
+      coverImage,
     };
 
     // Use manual excerpt if provided, otherwise generate
@@ -247,13 +257,108 @@ export default function Editor() {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const localUrl = URL.createObjectURL(file);
+    const previousImage = coverImage;
+    setCoverImage(localUrl);
+    setIsUploadingCover(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCoverImage(data.secure_url);
+        URL.revokeObjectURL(localUrl);
+      } else {
+        setCoverImage(previousImage);
+        alert("Upload failed");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      setCoverImage(previousImage);
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
+
+  const handleEditorImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !editor) return;
+
+    const localUrl = URL.createObjectURL(file);
+    editor.chain().focus().setImage({ src: localUrl }).run();
+    setIsUploadingEditorImage(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const { state, view } = editor;
+        const { tr } = state;
+        let found = false;
+
+        state.doc.descendants((node, pos) => {
+          if (node.type.name === "image" && node.attrs.src === localUrl) {
+            tr.setNodeMarkup(pos, undefined, {
+              ...node.attrs,
+              src: data.secure_url,
+            });
+            found = true;
+            return false;
+          }
+        });
+
+        if (found) {
+          view.dispatch(tr);
+        }
+        URL.revokeObjectURL(localUrl);
+      } else {
+        // Remove the local image on failure
+        const { state, view } = editor;
+        const { tr } = state;
+        state.doc.descendants((node, pos) => {
+          if (node.type.name === "image" && node.attrs.src === localUrl) {
+            tr.delete(pos, pos + node.nodeSize);
+            return false;
+          }
+        });
+        view.dispatch(tr);
+        alert("Upload failed");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+    } finally {
+      setIsUploadingEditorImage(false);
+      e.target.value = "";
+    }
+  };
+
   if (!isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="border-b border-border bg-card/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -273,10 +378,10 @@ export default function Editor() {
           </div>
 
           <div className="flex items-center gap-3">
-            <ModeToggle />
+            {/* <ModeToggle /> */}
             <Button
               onClick={handlePublish}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_15px_rgba(255,165,0,0.3)]"
             >
               <Save className="h-4 w-4 mr-2" />
               Publish
@@ -286,7 +391,7 @@ export default function Editor() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8 grid md:grid-cols-12 gap-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 grid md:grid-cols-12 gap-8 lg:gap-12">
         {/* Sidebar for Book Mode */}
         {type === "native-book" && (
           <aside className="md:col-span-3 space-y-4">
@@ -306,8 +411,8 @@ export default function Editor() {
                   }}
                   className={`p-3 rounded-lg border cursor-pointer transition-all ${
                     activeChapterIndex === idx
-                      ? "bg-orange-100 border-orange-200 dark:bg-orange-900/40 dark:border-orange-800"
-                      : "bg-card hover:bg-muted"
+                      ? "bg-primary/10 border-primary/20"
+                      : "bg-card hover:bg-white/5"
                   }`}
                 >
                   <input
@@ -330,20 +435,18 @@ export default function Editor() {
         {/* Editor Area */}
         <div
           className={
-            type === "native-book"
-              ? "md:col-span-9"
-              : "md:col-span-8 md:col-start-3"
+            type === "native-book" ? "md:col-span-9" : "md:col-span-12"
           }
         >
-          <div className="space-y-8">
+          <div className="">
             {/* Metadata Controls */}
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="md:col-span-3 space-y-4">
+            <div className="grid md:grid-cols-4 gap-8 md:gap-12">
+              <div className="md:col-span-3 space-y-6">
                 <Input
                   placeholder={
                     type === "native-book" ? "Book Title" : "Post Title"
                   }
-                  className="text-2xl md:text-4xl font-bold border-none px-0 shadow-none focus-visible:ring-0 bg-transparent placeholder:text-muted-foreground/50 h-auto"
+                  className="text-3xl md:text-5xl font-bold border-none border-b-2 border-primary/50 rounded-xl px-4 py-8 shadow-none focus-visible:ring-0 bg-transparent placeholder:text-muted-foreground/30 h-auto transition-all focus:border-primary"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
@@ -351,7 +454,7 @@ export default function Editor() {
                 {/* Manual Excerpt Field */}
                 <Textarea
                   placeholder="Add a short summary or excerpt..."
-                  className="resize-none border-none text-xl text-muted-foreground px-0 focus-visible:ring-0 bg-transparent min-h-[80px] p-0 font-medium placeholder:text-muted-foreground/40"
+                  className="resize-none border border-white/5 rounded-xl text-lg text-muted-foreground px-4 py-3 focus-visible:ring-1 focus-visible:ring-primary/20 bg-white/[0.02] min-h-[100px] font-normal placeholder:text-muted-foreground/30 transition-all"
                   value={excerpt}
                   onChange={(e) => setExcerpt(e.target.value)}
                 />
@@ -370,23 +473,84 @@ export default function Editor() {
                   </div>
                 )}
               </div>
-              <div>
-                <Select value={type} onValueChange={setType}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Content Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="native-simple">📝 Blog Post</SelectItem>
-                    <SelectItem value="native-book">📚 Book Summary</SelectItem>
-                    <SelectItem value="external">🔗 External Link</SelectItem>
-                  </SelectContent>
-                </Select>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1 mb-4">
+                    Content Type
+                  </label>
+                  <Select value={type} onValueChange={setType}>
+                    <SelectTrigger className="w-full rounded-xl bg-card border-border">
+                      <SelectValue placeholder="Content Type" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-border">
+                      <SelectItem value="native-simple">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-primary" />
+                          <span>Blog Post</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="native-book">
+                        <div className="flex items-center gap-2">
+                          <Book className="w-4 h-4 text-primary" />
+                          <span>Book Summary</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="external">
+                        <div className="flex items-center gap-2">
+                          <LinkIcon className="w-4 h-4 text-primary" />
+                          <span>External Link</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Cover Image Upload UI */}
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1 mb-4">
+                    Cover Image
+                  </label>
+                  <div className="relative group aspect-video rounded-lg overflow-hidden bg-muted border border-border">
+                    {coverImage ? (
+                      <>
+                        <img
+                          src={coverImage}
+                          alt="Cover preview"
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                        <button
+                          onClick={() => setCoverImage("")}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-white/5 transition-colors">
+                        <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          {isUploadingCover
+                            ? "Uploading..."
+                            : "Click to upload cover"}
+                        </span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={isUploadingCover}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Toolbar - Hide for External Type */}
             {type !== "external" && editor && (
-              <div className="flex flex-wrap gap-1 p-2 border border-border rounded-lg bg-card/30 sticky top-20 z-40 backdrop-blur-md">
+              <div className="flex flex-wrap gap-1 p-2 border border-border rounded-lg bg-card/30 sticky top-20 z-40 backdrop-blur-md mt-12 mb-8">
                 <ToggleBtn
                   onClick={() => editor.chain().focus().toggleBold().run()}
                   isActive={editor.isActive("bold")}
@@ -433,6 +597,25 @@ export default function Editor() {
                   }
                   isActive={editor.isActive("blockquote")}
                   icon={<Quote className="w-4 h-4" />}
+                />
+                <div className="w-px h-6 bg-border mx-1" />
+                <ToggleBtn
+                  onClick={() => {
+                    const input = document.getElementById(
+                      "editor-image-upload",
+                    );
+                    input?.click();
+                  }}
+                  isActive={false}
+                  icon={<ImageIcon className="w-4 h-4" />}
+                />
+                <input
+                  id="editor-image-upload"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleEditorImageUpload}
+                  disabled={isUploadingEditorImage}
                 />
                 <div className="ml-auto flex gap-1">
                   <ToggleBtn
@@ -486,8 +669,8 @@ const ToggleBtn = ({
     onClick={onClick}
     className={`p-2 rounded-md transition-colors ${
       isActive
-        ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
-        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        ? "bg-primary/20 text-primary shadow-[0_0_10px_rgba(255,165,0,0.2)]"
+        : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
     }`}
   >
     {icon}

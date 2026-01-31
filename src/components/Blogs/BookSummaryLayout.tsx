@@ -26,11 +26,11 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row">
       {/* Mobile Header for Sidebar Toggle */}
-      <div className="md:hidden bg-white border-b border-gray-100 p-4 sticky top-0 z-30 flex justify-between items-center">
+      <div className="md:hidden bg-card border-b border-border p-4 sticky top-0 z-30 flex justify-between items-center">
         <Button
           variant="ghost"
           onClick={() => router.push("/?slide=blogs")}
-          className="pl-0 hover:bg-transparent text-gray-600"
+          className="pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
@@ -46,7 +46,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
       {/* Sidebar - Chapter Navigation */}
       <aside
         className={cn(
-          "bg-card border-r border-border flex-shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto transition-all duration-300 ease-in-out z-20",
+          "bg-card border-r border-border flex-shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto no-scrollbar transition-all duration-300 ease-in-out z-20",
           "w-full md:w-80 lg:w-96", // Widths
           "fixed md:relative top-[57px] md:top-0 bottom-0 md:bottom-auto", // Positioning: Fixed on mobile below header
           isSidebarOpen
@@ -58,7 +58,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
           <Button
             variant="ghost"
             onClick={() => router.push("/?slide=blogs")}
-            className="mb-8 pl-0 hover:bg-transparent text-gray-600 hover:text-gray-900 hidden md:inline-flex"
+            className="mb-8 pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Blogs
           </Button>
@@ -66,7 +66,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
           <div className="mb-8">
             <Badge
               variant="outline"
-              className="mb-3 border-orange-200 text-orange-700"
+              className="mb-3 border-primary/20 text-primary bg-primary/5"
             >
               {blog.category}
             </Badge>
@@ -92,16 +92,16 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
                 className={cn(
                   "w-full text-left px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center group",
                   activeChapterIndex === index
-                    ? "bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_10px_rgba(255,165,0,0.1)]"
+                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
                 )}
               >
                 <div
                   className={cn(
                     "w-6 h-6 rounded-full flex items-center justify-center text-xs mr-3 transition-colors",
                     activeChapterIndex === index
-                      ? "bg-orange-100 dark:bg-orange-800 text-orange-700 dark:text-orange-200"
-                      : "bg-muted text-muted-foreground group-hover:bg-muted-foreground/20",
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-secondary text-muted-foreground group-hover:bg-muted-foreground/20",
                   )}
                 >
                   {index + 1}
@@ -117,7 +117,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-grow p-6 md:p-12 lg:p-16 overflow-y-auto">
+      <main className="flex-grow p-6 md:p-12 lg:p-16 overflow-y-auto no-scrollbar">
         <div className="max-w-3xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
@@ -127,7 +127,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex items-center space-x-2 text-gray-500 mb-6">
+              <div className="flex items-center space-x-2 text-primary/60 mb-6">
                 <BookOpen className="w-5 h-5" />
                 <span className="text-sm font-medium uppercase tracking-wide">
                   Chapter {activeChapterIndex + 1}
@@ -139,16 +139,16 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
               </h2>
 
               <div
-                className="prose prose-lg prose-orange dark:prose-invert max-w-none text-muted-foreground leading-relaxed
+                className="prose prose-lg prose-orange dark:prose-invert max-w-none text-muted-foreground/90 leading-relaxed
                   prose-headings:font-semibold prose-headings:text-foreground
                   prose-p:mb-6 prose-p:leading-8
                   prose-strong:text-foreground
-                  prose-a:text-orange-600 hover:prose-a:text-orange-700"
+                  prose-a:text-primary hover:prose-a:text-primary/80"
                 dangerouslySetInnerHTML={{ __html: activeChapter.content }}
               />
 
               {/* Navigation Footer */}
-              <div className="mt-16 pt-8 border-t border-gray-100 flex justify-between">
+              <div className="mt-16 pt-8 border-t border-border flex justify-between">
                 <Button
                   variant="outline"
                   onClick={() =>
@@ -170,7 +170,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
                   className={
                     activeChapterIndex === chapters.length - 1
                       ? "invisible"
-                      : "bg-orange-600 hover:bg-orange-700 text-white"
+                      : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_15px_rgba(255,165,0,0.3)]"
                   }
                 >
                   Next Chapter

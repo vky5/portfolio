@@ -151,7 +151,7 @@ export default function ExperienceManager() {
             </Button>
             <h1 className="text-2xl font-bold">Experience & Achievements</h1>
           </div>
-          <ModeToggle />
+          {/* <ModeToggle /> */}
         </div>
 
         <div className="grid md:grid-cols-12 gap-8">
@@ -163,16 +163,16 @@ export default function ExperienceManager() {
                 <Plus className="w-4 h-4 mr-2" /> New
               </Button>
             </div>
-            <div className="space-y-3 max-h-[70vh] overflow-y-auto">
+            <div className="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar">
               {items.map((p) => (
                 <div
                   key={p.id}
-                  className={`p-4 rounded border cursor-pointer transition-colors ${editingId === p.id ? "bg-orange-100 border-orange-500" : "bg-card hover:bg-muted"}`}
+                  className={`p-4 rounded border cursor-pointer transition-colors ${editingId === p.id ? "bg-primary/10 border-primary/20" : "bg-card hover:bg-white/5"}`}
                   onClick={() => handleEdit(p)}
                 >
                   <div className="flex justify-between">
                     <span
-                      className={`text-xs px-2 py-0.5 rounded ${p.type === "achievement" ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}
+                      className={`text-xs px-2 py-0.5 rounded ${p.type === "achievement" ? "bg-primary/10 text-primary border border-primary/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}
                     >
                       {p.type}
                     </span>
@@ -325,7 +325,7 @@ export default function ExperienceManager() {
                 </Button>
                 <Button
                   onClick={handleSave}
-                  className="bg-orange-500 hover:bg-orange-600"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_15px_rgba(255,165,0,0.3)] transition-all font-semibold"
                 >
                   Save
                 </Button>

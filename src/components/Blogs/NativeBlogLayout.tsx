@@ -32,10 +32,10 @@ export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+          <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground/60">
             <Badge
               variant="outline"
-              className="border-orange-200 text-orange-700"
+              className="border-primary/20 text-primary bg-primary/5"
             >
               {blog.category}
             </Badge>
@@ -49,11 +49,11 @@ export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
           </h1>
 
           <div
-            className="prose prose-orange md:prose-lg dark:prose-invert max-w-none text-muted-foreground leading-relaxed
+            className="prose prose-orange md:prose-lg dark:prose-invert max-w-none text-muted-foreground/90 leading-relaxed
                 prose-headings:font-semibold prose-headings:text-foreground
                 prose-p:mb-6 prose-p:leading-8
                 prose-strong:text-foreground
-                prose-a:text-orange-600 hover:prose-a:text-orange-700"
+                prose-a:text-primary hover:prose-a:text-primary/80"
             dangerouslySetInnerHTML={{ __html: blog.content }}
           />
         </motion.div>

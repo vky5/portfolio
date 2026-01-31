@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Trash2, Plus, X } from "lucide-react";
+import { ArrowLeft, Trash2, Plus, X, Upload } from "lucide-react";
 import { ModeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 
 interface Project {
+  _id?: string;
   id?: string;
   title: string;
   year: string;
@@ -20,6 +21,7 @@ interface Project {
   liveLink: string;
   blogLink: string;
   icon: string;
+  coverImage?: string;
 }
 
 export default function ProjectEditor() {
@@ -35,6 +37,8 @@ export default function ProjectEditor() {
   const [liveLink, setLiveLink] = useState("");
   const [blogLink, setBlogLink] = useState("");
   const [icon, setIcon] = useState("Code");
+  const [coverImage, setCoverImage] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   // Tag State
   const [tagInput, setTagInput] = useState("");
@@ -63,6 +67,7 @@ export default function ProjectEditor() {
     setBlogLink("");
     setTags([]);
     setIcon("Code");
+    setCoverImage("");
   };
 
   const handleEdit = (p: Project) => {
@@ -75,6 +80,7 @@ export default function ProjectEditor() {
     setBlogLink(p.blogLink || "");
     setTags(p.tags || []);
     setIcon(p.icon || "Code");
+    setCoverImage(p.coverImage || "");
   };
 
   const handleAddTag = () => {
@@ -101,6 +107,7 @@ export default function ProjectEditor() {
       liveLink,
       blogLink,
       icon,
+      coverImage,
     };
 
     const res = await fetch("/api/projects", {
@@ -123,6 +130,34 @@ export default function ProjectEditor() {
     const res = await fetch(`/api/projects?id=${id}`, { method: "DELETE" });
     if (res.ok) fetchProjects();
   };
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCoverImage(data.secure_url);
+        alert("Image uploaded!");
+      } else {
+        alert("Upload failed");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Upload error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -134,7 +169,7 @@ export default function ProjectEditor() {
             </Button>
             <h1 className="text-2xl font-bold">Project Manager</h1>
           </div>
-          <ModeToggle />
+          {/* <ModeToggle /> */}
         </div>
 
         <div className="grid md:grid-cols-12 gap-8">
@@ -146,11 +181,11 @@ export default function ProjectEditor() {
                 <Plus className="w-4 h-4 mr-2" /> New
               </Button>
             </div>
-            <div className="space-y-3 max-h-[70vh] overflow-y-auto">
+            <div className="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar">
               {projects.map((p) => (
                 <div
-                  key={p.id}
-                  className={`p-4 rounded border cursor-pointer transition-colors ${editingId === p.id ? "bg-orange-100 border-orange-500" : "bg-card hover:bg-muted"}`}
+                  key={p._id || p.id}
+                  className={`p-4 rounded border cursor-pointer transition-colors ${(p._id || p.id) === editingId ? "bg-primary/10 border-primary/20" : "bg-card hover:bg-white/5"}`}
                   onClick={() => handleEdit(p)}
                 >
                   <h3 className="font-semibold">{p.title}</h3>
@@ -198,6 +233,47 @@ export default function ProjectEditor() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+
+              {/* Cover Image Upload */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Cover Image</label>
+                <div className="flex items-center gap-4">
+                  {coverImage && (
+                    <div className="relative w-20 h-20 rounded border overflow-hidden">
+                      <img
+                        src={coverImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => setCoverImage("")}
+                        className="absolute top-0 right-0 bg-red-500 text-white p-0.5 rounded-bl"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex-grow">
+                    <label className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-white/5 transition-colors">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Upload className="w-6 h-6 mb-2 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">
+                          {isUploading
+                            ? "Uploading..."
+                            : "Click to upload cover"}
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={isUploading}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
 
               {/* Tags */}
               <div className="space-y-2">
@@ -251,7 +327,7 @@ export default function ProjectEditor() {
                 </Button>
                 <Button
                   onClick={handleSave}
-                  className="bg-orange-500 hover:bg-orange-600"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_15px_rgba(255,165,0,0.3)] transition-all"
                 >
                   Save Project
                 </Button>

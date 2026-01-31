@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Message {
+  _id?: string;
   id: string;
   name: string;
   email: string;
@@ -41,7 +42,7 @@ export function InboxViewer() {
     try {
       const res = await fetch(`/api/messages?id=${id}`, { method: "DELETE" });
       if (res.ok) {
-        setMessages((prev) => prev.filter((m) => m.id !== id));
+        setMessages((prev) => prev.filter((m) => (m._id || m.id) !== id));
       }
     } catch (error) {
       console.error("Failed to delete", error);
@@ -64,21 +65,21 @@ export function InboxViewer() {
   }
 
   return (
-    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
       {messages.map((msg) => (
         <div
-          key={msg.id}
+          key={msg._id || msg.id}
           className="p-4 rounded-lg bg-background border border-border space-y-2"
         >
           <div className="flex justify-between items-start">
             <div>
               <h4 className="font-semibold text-foreground">{msg.name}</h4>
-              <a
-                href={`mailto:${msg.email}`}
-                className="text-sm text-orange-600 hover:underline"
+              <button
+                onClick={() => (window.location.href = `mailto:${msg.email}`)}
+                className="text-sm text-primary hover:underline"
               >
                 {msg.email}
-              </a>
+              </button>
             </div>
             <span className="text-xs text-muted-foreground">
               {format(new Date(msg.date), "MMM d, yyyy")}
@@ -92,7 +93,7 @@ export function InboxViewer() {
               variant="ghost"
               size="sm"
               className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-              onClick={() => handleDelete(msg.id)}
+              onClick={() => handleDelete(msg._id || msg.id)}
             >
               <Trash2 className="w-4 h-4 mr-1" /> Delete
             </Button>
