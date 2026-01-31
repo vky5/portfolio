@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "../ui/button";
-import { ChevronLeft, ChevronRight, Lock, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import slides from "./data";
 import { useRouter } from "next/navigation";
@@ -51,18 +51,6 @@ export default function Navigation({
               </motion.button>
             );
           })}
-
-          <motion.a
-            href="/resume.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-2 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 cursor-pointer"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            title="View Resume"
-          >
-            <FileText className="w-4 h-4" />
-          </motion.a>
 
           <div className="w-px h-4 bg-white/10 mx-1" />
 

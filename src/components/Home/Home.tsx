@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Download } from "lucide-react";
 
 export default function HomeSlide() {
   const skills = [
@@ -92,23 +91,6 @@ export default function HomeSlide() {
                 </Badge>
               </motion.div>
             ))}
-          </motion.div>
-
-          <motion.div
-            className="mt-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.8 }}
-          >
-            <a
-              href="/resume.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-semibold shadow-[0_0_20px_rgba(255,165,0,0.4)] hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
-            >
-              <Download className="w-5 h-5" />
-              Download Resume
-            </a>
           </motion.div>
         </motion.div>
       </div>
