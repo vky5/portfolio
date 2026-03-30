@@ -12,6 +12,8 @@ import ProjectsSlide from "@/components/Projects/Projects";
 import ExperienceSlide from "@/components/Experience/Experience";
 import ContactSlide from "@/components/Contact/Contact";
 
+import { Loader } from "@/components/ui/Loader";
+
 function PortfolioContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -133,7 +135,9 @@ function PortfolioContent() {
 
 export default function Portfolio() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+    <Suspense
+      fallback={<Loader fullScreen message="Initializing System Architecture..." />}
+    >
       <PortfolioContent />
     </Suspense>
   );

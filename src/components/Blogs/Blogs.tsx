@@ -85,8 +85,8 @@ export default function BlogsSlide() {
 
   if (loading) {
     return (
-      <div className="py-24 flex justify-center">
-        <Loader message="Synchronizing Records" />
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader fullScreen message="Synchronizing Records..." />
       </div>
     );
   }

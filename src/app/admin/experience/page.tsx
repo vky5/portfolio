@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Loader } from "@/components/ui/Loader";
 
 interface ExperienceItem {
   id?: string;
@@ -33,6 +34,7 @@ export default function ExperienceManager() {
   const router = useRouter();
   const { success: toastSuccess, error: toastError, info: toastInfo, confirm: toastConfirm } = useToast();
   const [items, setItems] = useState<ExperienceItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form State
@@ -57,9 +59,14 @@ export default function ExperienceManager() {
   }, [router]);
 
   const fetchItems = async () => {
-    const res = await fetch("/api/experience");
-    if (res.ok) {
-      setItems(await res.json());
+    setLoading(true);
+    try {
+      const res = await fetch("/api/experience");
+      if (res.ok) {
+        setItems(await res.json());
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -170,37 +177,47 @@ export default function ExperienceManager() {
                 <Plus className="w-4 h-4 mr-2" /> New
               </Button>
             </div>
-            <div className="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar">
-              {items.map((p) => (
-                <div
-                  key={p.id}
-                  className={`p-4 rounded border cursor-pointer transition-colors ${editingId === p.id ? "bg-primary/10 border-primary/20" : "bg-card hover:bg-white/5"}`}
-                  onClick={() => handleEdit(p)}
-                >
-                  <div className="flex justify-between">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded ${p.type === "achievement" ? "bg-primary/10 text-primary border border-primary/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}
-                    >
-                      {p.type}
-                    </span>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-4 w-4 text-red-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(p.id!);
-                      }}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                  <h3 className="font-semibold mt-1">{p.role}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {p.company} • {p.period}
-                  </p>
+            <div className="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar relative min-h-[200px]">
+              {loading ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10 rounded-lg">
+                  <Loader message="Fetching Records" />
                 </div>
-              ))}
+              ) : items.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
+                  No items found
+                </div>
+              ) : (
+                items.map((p) => (
+                  <div
+                    key={p.id}
+                    className={`p-4 rounded border cursor-pointer transition-colors ${editingId === p.id ? "bg-primary/10 border-primary/20" : "bg-card hover:bg-white/5"}`}
+                    onClick={() => handleEdit(p)}
+                  >
+                    <div className="flex justify-between">
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded ${p.type === "achievement" ? "bg-primary/10 text-primary border border-primary/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}
+                      >
+                        {p.type}
+                      </span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-4 w-4 text-red-500"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(p.id!);
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <h3 className="font-semibold mt-1">{p.role}</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {p.company} • {p.period}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

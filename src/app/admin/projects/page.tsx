@@ -11,6 +11,7 @@ import { motion, Reorder } from "framer-motion";
 import { ModeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Loader } from "@/components/ui/Loader";
 
 interface Project {
   _id?: string;
@@ -30,6 +31,7 @@ export default function ProjectEditor() {
   const router = useRouter();
   const { success: toastSuccess, error: toastError, info: toastInfo, confirm: toastConfirm } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form State
@@ -54,9 +56,14 @@ export default function ProjectEditor() {
   }, [router]);
 
   const fetchProjects = async () => {
-    const res = await fetch("/api/projects");
-    if (res.ok) {
-      setProjects(await res.json());
+    setLoading(true);
+    try {
+      const res = await fetch("/api/projects");
+      if (res.ok) {
+        setProjects(await res.json());
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -209,44 +216,56 @@ export default function ProjectEditor() {
                 <Plus className="w-4 h-4 mr-2" /> New
               </Button>
             </div>
-            <Reorder.Group
-              axis="y"
-              values={projects}
-              onReorder={handleReorder}
-              className="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar"
-            >
-              {projects.map((p) => (
-                <Reorder.Item
-                  key={p._id || p.id}
-                  value={p}
-                  className={`p-4 rounded border cursor-pointer transition-colors group relative flex items-center gap-3 ${(p._id || p.id) === editingId ? "bg-primary/10 border-primary/20 shadow-inner" : "bg-card hover:bg-white/5"}`}
-                  onClick={() => handleEdit(p)}
+            <div className="relative min-h-[200px]">
+              {loading ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-50 rounded-lg border border-border/50">
+                  <Loader message="Fetching Records" />
+                </div>
+              ) : projects.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
+                  No projects found
+                </div>
+              ) : (
+                <Reorder.Group
+                  axis="y"
+                  values={projects}
+                  onReorder={handleReorder}
+                  className="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar"
                 >
-                  <div className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground group-hover:text-primary transition-colors pr-1">
-                    <GripVertical className="w-4 h-4" />
-                  </div>
-                  <div className="flex-grow">
-                    <h3 className="font-semibold">{p.title}</h3>
-                    <p className="text-xs text-muted-foreground">{p.year}</p>
-                  </div>
-                  <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-red-500 hover:bg-red-500/10"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (p._id || p.id) {
-                          handleDelete((p._id || p.id)!);
-                        }
-                      }}
+                  {projects.map((p) => (
+                    <Reorder.Item
+                      key={p._id || p.id}
+                      value={p}
+                      className={`p-4 rounded border cursor-pointer transition-colors group relative flex items-center gap-3 ${(p._id || p.id) === editingId ? "bg-primary/10 border-primary/20 shadow-inner" : "bg-card hover:bg-white/5"}`}
+                      onClick={() => handleEdit(p)}
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </Reorder.Item>
-              ))}
-            </Reorder.Group>
+                      <div className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground group-hover:text-primary transition-colors pr-1">
+                        <GripVertical className="w-4 h-4" />
+                      </div>
+                      <div className="flex-grow">
+                        <h3 className="font-semibold">{p.title}</h3>
+                        <p className="text-xs text-muted-foreground">{p.year}</p>
+                      </div>
+                      <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-red-500 hover:bg-red-500/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (p._id || p.id) {
+                              handleDelete((p._id || p.id)!);
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </Reorder.Item>
+                  ))}
+                </Reorder.Group>
+              )}
+            </div>
           </div>
 
           {/* Editor */}

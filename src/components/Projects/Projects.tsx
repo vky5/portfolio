@@ -6,6 +6,7 @@ import { Github, ExternalLink, ArrowRight, Code, Terminal } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { IconMap } from "./IconMap";
+import { Loader } from "@/components/ui/Loader";
 
 interface Project {
   _id?: string;
@@ -25,12 +26,15 @@ interface Project {
 export default function ProjectsSlide() {
   const [activeTag, setActiveTag] = useState("All");
   const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     fetch("/api/projects")
       .then((res) => res.json())
       .then(setProjects)
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
   }, []);
 
   // Consolidate tags/tech logic
@@ -42,6 +46,14 @@ export default function ProjectsSlide() {
     activeTag === "All"
       ? projects
       : projects.filter((p) => getTags(p).includes(activeTag));
+
+  if (loading) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader fullScreen message="Compiling Portfolio Archive..." />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12 w-full max-w-6xl mx-auto px-4">

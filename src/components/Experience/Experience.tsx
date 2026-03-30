@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Terminal, Code, Cpu } from "lucide-react";
+import { Loader } from "@/components/ui/Loader";
 
 interface Job {
   _id?: string;
@@ -18,22 +19,32 @@ interface Job {
 
 export default function ExperienceSlide() {
   const [experience, setExperience] = useState<Job[]>([]);
-  // Use string ID for active tracking to simplify
+  const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoading(true);
     fetch("/api/experience")
       .then((res) => res.json())
       .then((data: Job[]) => {
         setExperience(data);
         if (data.length > 0) setActiveId(data[0]._id || data[0].id);
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
   }, []);
 
   const works = experience.filter((j) => j.type === "work" || !j.type);
   const achievements = experience.filter((j) => j.type === "achievement");
   const activeItem = experience.find((e) => (e._id || e.id) === activeId);
+
+  if (loading) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader fullScreen message="Decrypting Career Path..." />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 font-mono">
