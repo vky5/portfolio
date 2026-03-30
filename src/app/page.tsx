@@ -136,7 +136,7 @@ function PortfolioContent() {
 export default function Portfolio() {
   return (
     <Suspense
-      fallback={<Loader fullScreen message="Initializing System Architecture..." />}
+      fallback={<Loader fullScreen />}
     >
       <PortfolioContent />
     </Suspense>

@@ -86,7 +86,7 @@ export default function BlogsSlide() {
   if (loading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <Loader fullScreen message="Synchronizing Records..." />
+        <Loader fullScreen />
       </div>
     );
   }

@@ -38,7 +38,7 @@ export default function BlogPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader fullScreen message="Accessing Archive" />
+        <Loader fullScreen />
       </div>
     );
   }

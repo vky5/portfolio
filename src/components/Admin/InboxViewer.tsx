@@ -59,7 +59,7 @@ export function InboxViewer() {
   if (loading)
     return (
       <div className="py-20 flex justify-center">
-        <Loader message="Fetching Messages" />
+        <Loader />
       </div>
     );
 

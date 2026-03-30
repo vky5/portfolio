@@ -50,7 +50,7 @@ export default function ProjectsSlide() {
   if (loading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <Loader fullScreen message="Compiling Portfolio Archive..." />
+        <Loader fullScreen />
       </div>
     );
   }

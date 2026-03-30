@@ -180,7 +180,7 @@ export default function ExperienceManager() {
             <div className="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar relative min-h-[200px]">
               {loading ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10 rounded-lg">
-                  <Loader message="Fetching Records" />
+                  <Loader />
                 </div>
               ) : items.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">

@@ -41,7 +41,7 @@ export default function ExperienceSlide() {
   if (loading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <Loader fullScreen message="Decrypting Career Path..." />
+        <Loader fullScreen />
       </div>
     );
   }

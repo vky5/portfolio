@@ -68,7 +68,7 @@ export default function AdminPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader fullScreen message="Verifying Identity" />
+        <Loader fullScreen />
       </div>
     );
   }
