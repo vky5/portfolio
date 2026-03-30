@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Trash2, Plus, X, Upload } from "lucide-react";
 import { ModeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 interface Project {
   _id?: string;
@@ -26,6 +27,7 @@ interface Project {
 
 export default function ProjectEditor() {
   const router = useRouter();
+  const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -95,7 +97,7 @@ export default function ProjectEditor() {
   };
 
   const handleSave = async () => {
-    if (!title) return alert("Title required");
+    if (!title) return toastInfo("Title required");
 
     const payload = {
       id: editingId,
@@ -117,11 +119,11 @@ export default function ProjectEditor() {
     });
 
     if (res.ok) {
-      alert("Project saved!");
+      toastSuccess("Project saved!");
       resetForm();
       fetchProjects();
     } else {
-      alert("Failed to save");
+      toastError("Failed to save");
     }
   };
 
@@ -147,13 +149,13 @@ export default function ProjectEditor() {
       if (res.ok) {
         const data = await res.json();
         setCoverImage(data.secure_url);
-        alert("Image uploaded!");
+        toastSuccess("Image uploaded!");
       } else {
-        alert("Upload failed");
+        toastError("Upload failed");
       }
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Upload error");
+      toastError("Upload error");
     } finally {
       setIsUploading(false);
     }

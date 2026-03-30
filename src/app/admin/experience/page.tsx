@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Trash2, Plus, X } from "lucide-react";
 import { ModeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -30,6 +31,7 @@ interface ExperienceItem {
 
 export default function ExperienceManager() {
   const router = useRouter();
+  const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
   const [items, setItems] = useState<ExperienceItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -107,7 +109,7 @@ export default function ExperienceManager() {
   };
 
   const handleSave = async () => {
-    if (!role) return alert("Role/Title required");
+    if (!role) return toastInfo("Role/Title required");
 
     const payload = {
       id: editingId,
@@ -127,11 +129,11 @@ export default function ExperienceManager() {
     });
 
     if (res.ok) {
-      alert("Saved!");
+      toastSuccess("Saved!");
       resetForm();
       fetchItems();
     } else {
-      alert("Failed to save");
+      toastError("Failed to save");
     }
   };
 

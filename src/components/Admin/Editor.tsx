@@ -44,10 +44,12 @@ interface Chapter {
   content: string;
 }
 
+import { useToast } from "@/hooks/use-toast";
 import { BlogPost } from "@/data/blogs";
 
 export default function Editor() {
   const router = useRouter();
+  const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
   const searchParams = useSearchParams();
   const editSlug = searchParams.get("slug");
 
@@ -175,7 +177,7 @@ export default function Editor() {
     if (type === "native-book") {
       saveCurrentChapterContent();
       if (!chapters.length) {
-        alert("Please add at least one chapter.");
+        toastInfo("Please add at least one chapter.");
         return;
       }
       chapters[activeChapterIndex].content = editor?.getHTML() || "";
@@ -188,7 +190,7 @@ export default function Editor() {
       .replace(/(^-|-$)/g, "");
 
     if (!id) {
-      alert("Please enter a title");
+      toastInfo("Please enter a title");
       return;
     }
 
@@ -226,7 +228,7 @@ export default function Editor() {
       payload.content = contentHTML;
     } else if (type === "external") {
       if (!externalLink) {
-        alert("Please provide an External Link URL");
+        toastInfo("Please provide an External Link URL");
         return;
       }
       payload.externalLink = externalLink;
@@ -246,14 +248,14 @@ export default function Editor() {
       });
 
       if (res.ok) {
-        alert("Published successfully!");
+        toastSuccess("Published successfully!");
         router.push("/admin");
       } else {
-        alert("Failed to publish");
+        toastError("Failed to publish");
       }
     } catch (e) {
       console.error(e);
-      alert("Error publishing");
+      toastError("Error publishing");
     }
   };
 
@@ -281,7 +283,7 @@ export default function Editor() {
         URL.revokeObjectURL(localUrl);
       } else {
         setCoverImage(previousImage);
-        alert("Upload failed");
+        toastError("Upload failed");
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -342,7 +344,7 @@ export default function Editor() {
           }
         });
         view.dispatch(tr);
-        alert("Upload failed");
+        toastError("Upload failed");
       }
     } catch (error) {
       console.error("Upload error:", error);
