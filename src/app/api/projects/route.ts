@@ -5,11 +5,34 @@ import Project from "@/models/Project";
 export async function GET() {
   await dbConnect();
   try {
-    const projects = await Project.find({}).sort({ year: -1 });
+    const projects = await Project.find({}).sort({ order: 1, year: -1 });
     return NextResponse.json(projects);
   } catch (error) {
     console.error("Error fetching projects:", error);
     return NextResponse.json([], { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  await dbConnect();
+  try {
+    const { order } = await request.json(); // Expected: order: string[] (array of IDs)
+    if (!order || !Array.isArray(order)) {
+      return NextResponse.json({ success: false, message: "Invalid order data" }, { status: 400 });
+    }
+
+    const bulkOps = order.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { $set: { order: index } },
+      },
+    }));
+
+    await Project.bulkWrite(bulkOps);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error updating project order:", error);
+    return NextResponse.json({ success: false }, { status: 500 });
   }
 }
 

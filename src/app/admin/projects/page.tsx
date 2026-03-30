@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Trash2, Plus, X, Upload } from "lucide-react";
+import { ArrowLeft, Trash2, Plus, X, Upload, GripVertical } from "lucide-react";
+import { motion, Reorder } from "framer-motion";
 import { ModeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -73,7 +74,7 @@ export default function ProjectEditor() {
   };
 
   const handleEdit = (p: Project) => {
-    setEditingId(p.id || null);
+    setEditingId(p._id || p.id || null);
     setTitle(p.title);
     setYear(p.year);
     setDescription(p.description);
@@ -100,7 +101,7 @@ export default function ProjectEditor() {
     if (!title) return toastInfo("Title required");
 
     const payload = {
-      id: editingId,
+      _id: editingId,
       title,
       year,
       description,
@@ -132,6 +133,26 @@ export default function ProjectEditor() {
     const res = await fetch(`/api/projects?id=${id}`, { method: "DELETE" });
     if (res.ok) fetchProjects();
   };
+ 
+  const handleReorder = async (newOrder: Project[]) => {
+    setProjects(newOrder);
+    try {
+      const res = await fetch("/api/projects", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order: newOrder.map((p) => p._id || p.id) }),
+      });
+      if (!res.ok) {
+        toastError("Failed to save new order");
+        fetchProjects(); // Revert on failure
+      }
+    } catch (error) {
+      console.error("Reorder error:", error);
+      toastError("Error saving order");
+      fetchProjects();
+    }
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -183,31 +204,44 @@ export default function ProjectEditor() {
                 <Plus className="w-4 h-4 mr-2" /> New
               </Button>
             </div>
-            <div className="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar">
+            <Reorder.Group
+              axis="y"
+              values={projects}
+              onReorder={handleReorder}
+              className="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar"
+            >
               {projects.map((p) => (
-                <div
+                <Reorder.Item
                   key={p._id || p.id}
-                  className={`p-4 rounded border cursor-pointer transition-colors ${(p._id || p.id) === editingId ? "bg-primary/10 border-primary/20" : "bg-card hover:bg-white/5"}`}
+                  value={p}
+                  className={`p-4 rounded border cursor-pointer transition-colors group relative flex items-center gap-3 ${(p._id || p.id) === editingId ? "bg-primary/10 border-primary/20 shadow-inner" : "bg-card hover:bg-white/5"}`}
                   onClick={() => handleEdit(p)}
                 >
-                  <h3 className="font-semibold">{p.title}</h3>
-                  <p className="text-xs text-muted-foreground">{p.year}</p>
-                  <div className="flex justify-end mt-2">
+                  <div className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground group-hover:text-primary transition-colors pr-1">
+                    <GripVertical className="w-4 h-4" />
+                  </div>
+                  <div className="flex-grow">
+                    <h3 className="font-semibold">{p.title}</h3>
+                    <p className="text-xs text-muted-foreground">{p.year}</p>
+                  </div>
+                  <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-6 w-6 text-red-500"
+                      className="h-8 w-8 text-red-500 hover:bg-red-500/10"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(p.id!);
+                        if (p._id || p.id) {
+                          handleDelete((p._id || p.id)!);
+                        }
                       }}
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                </div>
+                </Reorder.Item>
               ))}
-            </div>
+            </Reorder.Group>
           </div>
 
           {/* Editor */}
@@ -292,12 +326,19 @@ export default function ProjectEditor() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {tags.map((t) => (
-                    <Badge key={t} variant="secondary">
+                    <Badge key={t} variant="secondary" className="flex items-center gap-1">
                       {t}
-                      <X
-                        className="w-3 h-3 ml-1 cursor-pointer"
-                        onClick={() => removeTag(t)}
-                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeTag(t);
+                        }}
+                        className="hover:bg-muted p-0.5 rounded"
+                      >
+                        <X className="w-3 h-3 cursor-pointer" />
+                      </button>
                     </Badge>
                   ))}
                 </div>

@@ -10,6 +10,7 @@ export interface IProject extends Document {
   blogLink?: string;
   icon?: string;
   coverImage?: string;
+  order: number;
 }
 
 const ProjectSchema: Schema = new Schema({
@@ -22,6 +23,7 @@ const ProjectSchema: Schema = new Schema({
   blogLink: { type: String, default: "" },
   icon: { type: String, default: "" },
   coverImage: { type: String, default: "" },
+  order: { type: Number, default: 0 },
 });
 
 export default mongoose.models.Project ||
