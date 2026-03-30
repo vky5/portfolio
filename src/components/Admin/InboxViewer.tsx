@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Loader } from "@/components/ui/Loader";
 
 interface Message {
   _id?: string;
@@ -15,6 +17,7 @@ interface Message {
 }
 
 export function InboxViewer() {
+  const { success: toastSuccess, error: toastError, confirm: toastConfirm } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,22 +40,26 @@ export function InboxViewer() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this message?")) return;
+    if (!(await toastConfirm("Are you sure you want to delete this message?"))) return;
 
     try {
       const res = await fetch(`/api/messages?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setMessages((prev) => prev.filter((m) => (m._id || m.id) !== id));
+        toastSuccess("Message deleted");
+      } else {
+        toastError("Failed to delete message");
       }
     } catch (error) {
       console.error("Failed to delete", error);
+      toastError("Error deleting message");
     }
   };
 
   if (loading)
     return (
-      <div className="text-center py-4 text-muted-foreground">
-        Loading messages...
+      <div className="py-20 flex justify-center">
+        <Loader message="Fetching Messages" />
       </div>
     );
 

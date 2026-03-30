@@ -6,6 +6,7 @@ import { BlogPost } from "@/data/blogs"; // Using types only
 import NativeBlogLayout from "@/components/Blogs/NativeBlogLayout";
 import BookSummaryLayout from "@/components/Blogs/BookSummaryLayout";
 import { Button } from "@/components/ui/button";
+import { Loader } from "@/components/ui/Loader";
 
 export default function BlogPage() {
   const params = useParams();
@@ -37,7 +38,7 @@ export default function BlogPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <Loader fullScreen message="Accessing Archive" />
       </div>
     );
   }

@@ -8,6 +8,7 @@ import { BlogType, BlogPost } from "@/data/blogs"; // Keep types, remove static 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ExternalLink, FileText, Book, Pencil, Terminal } from "lucide-react";
+import { Loader } from "@/components/ui/Loader";
 
 export default function BlogsSlide() {
   const router = useRouter();
@@ -84,8 +85,8 @@ export default function BlogsSlide() {
 
   if (loading) {
     return (
-      <div className="text-center py-20 text-muted-foreground animate-pulse">
-        Loading content...
+      <div className="py-24 flex justify-center">
+        <Loader message="Synchronizing Records" />
       </div>
     );
   }

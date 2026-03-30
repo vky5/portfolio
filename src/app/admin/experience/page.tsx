@@ -31,7 +31,7 @@ interface ExperienceItem {
 
 export default function ExperienceManager() {
   const router = useRouter();
-  const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
+  const { success: toastSuccess, error: toastError, info: toastInfo, confirm: toastConfirm } = useToast();
   const [items, setItems] = useState<ExperienceItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -138,9 +138,14 @@ export default function ExperienceManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure?")) return;
+    if (!(await toastConfirm("Are you sure you want to delete this experience?"))) return;
     const res = await fetch(`/api/experience?id=${id}`, { method: "DELETE" });
-    if (res.ok) fetchItems();
+    if (res.ok) {
+      toastSuccess("Experience deleted");
+      fetchItems();
+    } else {
+      toastError("Failed to delete experience");
+    }
   };
 
   return (

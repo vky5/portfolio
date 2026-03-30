@@ -14,6 +14,7 @@ import {
 import { Lock, LogOut, ShieldCheck, Home, Mail } from "lucide-react";
 import { ModeToggle } from "@/components/ThemeToggle";
 import { InboxViewer } from "@/components/Admin/InboxViewer";
+import { Loader } from "@/components/ui/Loader";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -67,7 +68,7 @@ export default function AdminPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        Loading...
+        <Loader fullScreen message="Verifying Identity" />
       </div>
     );
   }

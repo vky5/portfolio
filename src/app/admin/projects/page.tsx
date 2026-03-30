@@ -28,7 +28,7 @@ interface Project {
 
 export default function ProjectEditor() {
   const router = useRouter();
-  const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
+  const { success: toastSuccess, error: toastError, info: toastInfo, confirm: toastConfirm } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -129,9 +129,14 @@ export default function ProjectEditor() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure?")) return;
+    if (!(await toastConfirm("Are you sure you want to delete this project?"))) return;
     const res = await fetch(`/api/projects?id=${id}`, { method: "DELETE" });
-    if (res.ok) fetchProjects();
+    if (res.ok) {
+      toastSuccess("Project deleted");
+      fetchProjects();
+    } else {
+      toastError("Failed to delete project");
+    }
   };
  
   const handleReorder = async (newOrder: Project[]) => {
