@@ -25,6 +25,8 @@ import {
   Quote,
   Heading1,
   Heading2,
+  Heading3,
+  Heading4,
   Undo,
   Redo,
   Save,
@@ -577,6 +579,20 @@ export default function Editor() {
                   }
                   isActive={editor.isActive("heading", { level: 2 })}
                   icon={<Heading2 className="w-4 h-4" />}
+                />
+                <ToggleBtn
+                  onClick={() =>
+                    editor.chain().focus().toggleHeading({ level: 3 }).run()
+                  }
+                  isActive={editor.isActive("heading", { level: 3 })}
+                  icon={<Heading3 className="w-4 h-4" />}
+                />
+                <ToggleBtn
+                  onClick={() =>
+                    editor.chain().focus().toggleHeading({ level: 4 }).run()
+                  }
+                  isActive={editor.isActive("heading", { level: 4 })}
+                  icon={<Heading4 className="w-4 h-4" />}
                 />
                 <div className="w-px h-6 bg-border mx-1" />
                 <ToggleBtn
