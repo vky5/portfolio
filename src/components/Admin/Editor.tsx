@@ -668,6 +668,7 @@ const ToggleBtn = ({
   icon: React.ReactNode;
 }) => (
   <button
+    type="button"
     onClick={onClick}
     className={`p-2 rounded-md transition-colors ${
       isActive
