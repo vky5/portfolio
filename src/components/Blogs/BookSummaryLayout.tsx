@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, BookOpen, ChevronRight } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface BookSummaryLayoutProps {
@@ -18,38 +18,90 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
   const [activeChapterIndex, setActiveChapterIndex] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar state
   const [headings, setHeadings] = useState<{ id: string; text: string; level: number }[]>([]);
+  const [activeHeadingId, setActiveHeadingId] = useState<string>("");
+  const contentRef = useRef<HTMLDivElement>(null);
 
   if (!blog.bookData || !blog.bookData.chapters.length) return null;
 
   const chapters = blog.bookData.chapters;
   const activeChapter = chapters[activeChapterIndex];
 
+  // Scroll to top of main on chapter change
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
-    const container = document.querySelector(".prose-content");
+    const mainEl = document.querySelector("main");
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [activeChapterIndex]);
+
+  // Extract headings with a small timeout to guarantee DOM is settled
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    const container = contentRef.current;
     if (!container) return;
 
-    const headingElements = container.querySelectorAll("h1, h2, h3, h4");
-    const list: { id: string; text: string; level: number }[] = [];
+    const timeoutId = setTimeout(() => {
+      const headingElements = container.querySelectorAll("h1, h2, h3, h4");
+      const list: { id: string; text: string; level: number }[] = [];
 
-    headingElements.forEach((el, idx) => {
-      if (!el.id) {
-        const text = el.textContent || "";
-        const slug = text
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, "");
-        el.id = slug || `heading-${idx}`;
-      }
-      list.push({
-        id: el.id,
-        text: el.textContent || "",
-        level: parseInt(el.tagName.replace("H", ""), 10),
+      headingElements.forEach((el, idx) => {
+        if (!el.id) {
+          const text = el.textContent || "";
+          const slug = text
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "");
+          el.id = slug || `heading-${idx}`;
+        }
+        list.push({
+          id: el.id,
+          text: el.textContent || "",
+          level: parseInt(el.tagName.replace("H", ""), 10),
+        });
       });
-    });
 
-    setHeadings(list);
+      setHeadings(list);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [activeChapterIndex, blog.bookData]);
+
+  // ScrollSpy listener
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    const mainEl = document.querySelector("main");
+    if (!mainEl || headings.length === 0) return;
+
+    const handleScroll = () => {
+      const container = contentRef.current;
+      if (!container) return;
+
+      const headingElements = container.querySelectorAll("h1, h2, h3, h4");
+      let currentActiveId = "";
+      const scrollContainerTop = mainEl.getBoundingClientRect().top;
+
+      for (let i = 0; i < headingElements.length; i++) {
+        const el = headingElements[i];
+        const rect = el.getBoundingClientRect();
+        const relativeTop = rect.top - scrollContainerTop;
+
+        if (relativeTop <= 100) {
+          currentActiveId = el.id;
+        } else {
+          break;
+        }
+      }
+
+      if (currentActiveId) {
+        setActiveHeadingId(currentActiveId);
+      }
+    };
+
+    handleScroll();
+    mainEl.addEventListener("scroll", handleScroll);
+    return () => mainEl.removeEventListener("scroll", handleScroll);
+  }, [activeChapterIndex, headings]);
 
   return (
     <div className="h-screen bg-background flex flex-col md:flex-row md:overflow-hidden">
@@ -188,9 +240,15 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
                               e.preventDefault();
                               document.getElementById(h.id)?.scrollIntoView({ behavior: "smooth" });
                             }}
-                            className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                            className={cn(
+                              "text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group",
+                              activeHeadingId === h.id ? "text-primary font-medium" : ""
+                            )}
                           >
-                            <span className="opacity-40 group-hover:opacity-100 group-hover:text-primary transition-opacity">•</span>
+                            <span className={cn(
+                              "opacity-40 group-hover:opacity-100 group-hover:text-primary transition-opacity",
+                              activeHeadingId === h.id ? "opacity-100 text-primary" : ""
+                            )}>•</span>
                             <span className={h.level === 1 ? "font-medium text-foreground/90 hover:text-primary" : ""}>
                               {h.text}
                             </span>
@@ -202,6 +260,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
                 )}
 
                 <div
+                  ref={contentRef}
                   className="prose-content prose prose-lg prose-orange dark:prose-invert max-w-none text-muted-foreground/90 leading-relaxed
                     prose-headings:font-semibold prose-headings:text-foreground
                     prose-p:mb-6 prose-p:leading-8
@@ -264,8 +323,10 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
                         document.getElementById(h.id)?.scrollIntoView({ behavior: "smooth" });
                       }}
                       className={cn(
-                        "text-muted-foreground hover:text-primary transition-colors flex items-start gap-1.5 group",
-                        h.level === 1 ? "font-semibold text-foreground/90" : ""
+                        "transition-all duration-200 flex items-start gap-1.5 group relative -left-[13px] pl-3 border-l-2",
+                        activeHeadingId === h.id
+                          ? "text-primary border-primary font-medium"
+                          : "text-muted-foreground border-transparent hover:text-foreground"
                       )}
                     >
                       <span className="group-hover:text-primary transition-colors">{h.text}</span>

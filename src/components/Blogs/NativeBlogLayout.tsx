@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BlogPost } from "@/data/blogs";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -16,32 +16,71 @@ interface NativeBlogLayoutProps {
 export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
   const router = useRouter();
   const [headings, setHeadings] = useState<{ id: string; text: string; level: number }[]>([]);
+  const [activeHeadingId, setActiveHeadingId] = useState<string>("");
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const container = document.querySelector(".prose-content");
+    const container = contentRef.current;
     if (!container) return;
 
-    const headingElements = container.querySelectorAll("h1, h2, h3, h4");
-    const list: { id: string; text: string; level: number }[] = [];
+    const timeoutId = setTimeout(() => {
+      const headingElements = container.querySelectorAll("h1, h2, h3, h4");
+      const list: { id: string; text: string; level: number }[] = [];
 
-    headingElements.forEach((el, idx) => {
-      if (!el.id) {
-        const text = el.textContent || "";
-        const slug = text
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, "");
-        el.id = slug || `heading-${idx}`;
-      }
-      list.push({
-        id: el.id,
-        text: el.textContent || "",
-        level: parseInt(el.tagName.replace("H", ""), 10),
+      headingElements.forEach((el, idx) => {
+        if (!el.id) {
+          const text = el.textContent || "";
+          const slug = text
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "");
+          el.id = slug || `heading-${idx}`;
+        }
+        list.push({
+          id: el.id,
+          text: el.textContent || "",
+          level: parseInt(el.tagName.replace("H", ""), 10),
+        });
       });
-    });
 
-    setHeadings(list);
+      setHeadings(list);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [blog.content]);
+
+  // ScrollSpy listener
+  useEffect(() => {
+    if (headings.length === 0) return;
+
+    const handleScroll = () => {
+      const container = contentRef.current;
+      if (!container) return;
+
+      const headingElements = container.querySelectorAll("h1, h2, h3, h4");
+      let currentActiveId = "";
+
+      for (let i = 0; i < headingElements.length; i++) {
+        const el = headingElements[i];
+        const rect = el.getBoundingClientRect();
+
+        // 120px threshold offset for top of viewport scroll
+        if (rect.top <= 120) {
+          currentActiveId = el.id;
+        } else {
+          break;
+        }
+      }
+
+      if (currentActiveId) {
+        setActiveHeadingId(currentActiveId);
+      }
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [headings]);
 
   if (!blog.content) return null;
 
@@ -98,9 +137,15 @@ export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
                           e.preventDefault();
                           document.getElementById(h.id)?.scrollIntoView({ behavior: "smooth" });
                         }}
-                        className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                        className={cn(
+                          "text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group",
+                          activeHeadingId === h.id ? "text-primary font-medium" : ""
+                        )}
                       >
-                        <span className="opacity-40 group-hover:opacity-100 group-hover:text-primary transition-opacity">•</span>
+                        <span className={cn(
+                          "opacity-40 group-hover:opacity-100 group-hover:text-primary transition-opacity",
+                          activeHeadingId === h.id ? "opacity-100 text-primary" : ""
+                        )}>•</span>
                         <span className={h.level === 1 ? "font-medium text-foreground/90 hover:text-primary" : ""}>
                           {h.text}
                         </span>
@@ -112,6 +157,7 @@ export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
             )}
 
             <div
+              ref={contentRef}
               className="prose-content prose prose-orange md:prose-lg dark:prose-invert max-w-none text-muted-foreground/90 leading-relaxed
                   prose-headings:font-semibold prose-headings:text-foreground
                   prose-p:mb-6 prose-p:leading-8
@@ -143,8 +189,10 @@ export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
                       document.getElementById(h.id)?.scrollIntoView({ behavior: "smooth" });
                     }}
                     className={cn(
-                      "text-muted-foreground hover:text-primary transition-colors flex items-start gap-1.5 group",
-                      h.level === 1 ? "font-semibold text-foreground/90" : ""
+                      "transition-all duration-200 flex items-start gap-1.5 group relative -left-[13px] pl-3 border-l-2",
+                      activeHeadingId === h.id
+                        ? "text-primary border-primary font-medium"
+                        : "text-muted-foreground border-transparent hover:text-foreground"
                     )}
                   >
                     <span className="group-hover:text-primary transition-colors">{h.text}</span>
