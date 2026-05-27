@@ -7,6 +7,11 @@ import StarterKit from "@tiptap/starter-kit";
 import LinkExtension from "@tiptap/extension-link";
 import ImageExtension from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import { DOMParser } from "@tiptap/pm/model";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableCell } from "@tiptap/extension-table-cell";
+import { TableHeader } from "@tiptap/extension-table-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -82,11 +87,42 @@ export default function Editor() {
       Placeholder.configure({
         placeholder: "Write something amazing...",
       }),
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     editorProps: {
       attributes: {
         class:
           "prose prose-lg prose-orange dark:prose-invert max-w-none focus:outline-none min-h-[500px] [&_img]:mx-auto [&_img]:rounded-xl [&_img]:my-8",
+      },
+      handlePaste(view, event) {
+        const htmlData = event.clipboardData?.getData("text/html");
+        // If there is HTML table structure already, let Tiptap's native paste handle it
+        if (htmlData && htmlData.includes("<table")) {
+          return false;
+        }
+
+        const text = event.clipboardData?.getData("text/plain");
+        if (text) {
+          const isMarkdownTable = /\|.+\|.*\r?\n\s*\|[ :-]+[|-]{3,}/.test(text);
+          const isMarkdownOther = /^(#{1,6}\s+\S+|[-*•]\s+\S+|\d+\.\s+\S+|> \S+)/m.test(text);
+
+          if (isMarkdownTable || isMarkdownOther) {
+            const html = convertMarkdownToHtml(text);
+            const parser = DOMParser.fromSchema(view.state.schema);
+            const dom = document.createElement("div");
+            dom.innerHTML = html;
+            const slice = parser.parseSlice(dom);
+
+            view.dispatch(view.state.tr.replaceSelection(slice));
+            return true;
+          }
+        }
+        return false;
       },
     },
     immediatelyRender: false,
@@ -695,3 +731,189 @@ const ToggleBtn = ({
     {icon}
   </button>
 );
+
+// Helper to escape HTML characters
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Helper to parse basic inline markdown elements
+function parseInlineMarkdown(text: string): string {
+  let html = escapeHtml(text);
+  // Bold **text** or __text__
+  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/__(.*?)__/g, "<strong>$1</strong>");
+  // Italic *text* or _text_
+  html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+  html = html.replace(/_(.*?)_/g, "<em>$1</em>");
+  // Code `code`
+  html = html.replace(/`(.*?)`/g, "<code>$1</code>");
+  // Links [text](url)
+  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  return html;
+}
+
+// Convert plain text markdown to rich HTML
+function convertMarkdownToHtml(text: string): string {
+  const lines = text.split(/\r?\n/);
+  const result: string[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Check for markdown table
+    // A markdown table starts with a row like | Col 1 | Col 2 |
+    // followed by a separator row like | --- | --- |
+    if (
+      line.trim().startsWith("|") &&
+      i + 1 < lines.length &&
+      lines[i + 1].trim().startsWith("|") &&
+      lines[i + 1].includes("-")
+    ) {
+      const tableLines: string[] = [];
+      while (i < lines.length && (lines[i].trim().startsWith("|") || lines[i].trim() === "")) {
+        if (lines[i].trim() !== "") {
+          tableLines.push(lines[i].trim());
+        }
+        i++;
+      }
+
+      if (tableLines.length >= 2) {
+        const headerRow = tableLines[0];
+        const dividerRow = tableLines[1];
+        const dataRows = tableLines.slice(2);
+
+        const splitRow = (row: string) => {
+          let cleaned = row.trim();
+          if (cleaned.startsWith("|")) cleaned = cleaned.slice(1);
+          if (cleaned.endsWith("|")) cleaned = cleaned.slice(0, -1);
+          return cleaned.split("|").map((cell) => cell.trim());
+        };
+
+        const headers = splitRow(headerRow);
+        const alignments = splitRow(dividerRow).map((col) => {
+          if (col.startsWith(":") && col.endsWith(":")) return "center";
+          if (col.endsWith(":")) return "right";
+          return "left";
+        });
+
+        let tableHtml = "<table>";
+        
+        // Header
+        tableHtml += "<thead><tr>";
+        headers.forEach((header, index) => {
+          const align = alignments[index] || "left";
+          const style = align !== "left" ? ` style="text-align: ${align}"` : "";
+          tableHtml += `<th${style}>${parseInlineMarkdown(header)}</th>`;
+        });
+        tableHtml += "</tr></thead>";
+
+        // Body
+        tableHtml += "<tbody>";
+        dataRows.forEach((row) => {
+          const cells = splitRow(row);
+          tableHtml += "<tr>";
+          for (let colIdx = 0; colIdx < headers.length; colIdx++) {
+            const cellVal = cells[colIdx] || "";
+            const align = alignments[colIdx] || "left";
+            const style = align !== "left" ? ` style="text-align: ${align}"` : "";
+            tableHtml += `<td${style}>${parseInlineMarkdown(cellVal)}</td>`;
+          }
+          tableHtml += "</tr>";
+        });
+        tableHtml += "</tbody></table>";
+
+        result.push(tableHtml);
+        continue;
+      }
+    }
+
+    // Check for headings
+    const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const content = parseInlineMarkdown(headingMatch[2]);
+      result.push(`<h${level}>${content}</h${level}>`);
+      i++;
+      continue;
+    }
+
+    // Check for unordered lists
+    if (
+      line.trim().startsWith("- ") ||
+      line.trim().startsWith("* ") ||
+      line.trim().startsWith("• ")
+    ) {
+      let listHtml = "<ul>";
+      while (
+        i < lines.length &&
+        (lines[i].trim().startsWith("- ") ||
+          lines[i].trim().startsWith("* ") ||
+          lines[i].trim().startsWith("• ") ||
+          lines[i].trim() === "")
+      ) {
+        if (lines[i].trim() !== "") {
+          const content = lines[i].trim().replace(/^[-*•]\s+/, "");
+          listHtml += `<li>${parseInlineMarkdown(content)}</li>`;
+        }
+        i++;
+      }
+      listHtml += "</ul>";
+      result.push(listHtml);
+      continue;
+    }
+
+    // Check for ordered lists
+    if (/^\d+\.\s+/.test(line.trim())) {
+      let listHtml = "<ol>";
+      while (
+        i < lines.length &&
+        (/^\d+\.\s+/.test(lines[i].trim()) || lines[i].trim() === "")
+      ) {
+        if (lines[i].trim() !== "") {
+          const content = lines[i].trim().replace(/^\d+\.\s+/, "");
+          listHtml += `<li>${parseInlineMarkdown(content)}</li>`;
+        }
+        i++;
+      }
+      listHtml += "</ol>";
+      result.push(listHtml);
+      continue;
+    }
+
+    // Check for blockquotes
+    if (line.trim().startsWith(">")) {
+      let quoteHtml = "<blockquote>";
+      const quoteLines: string[] = [];
+      while (
+        i < lines.length &&
+        (lines[i].trim().startsWith(">") || lines[i].trim() === "")
+      ) {
+        if (lines[i].trim() !== "") {
+          quoteLines.push(lines[i].trim().replace(/^>\s*/, ""));
+        }
+        i++;
+      }
+      quoteHtml +=
+        quoteLines.map((l) => parseInlineMarkdown(l)).join("<br>") +
+        "</blockquote>";
+      result.push(quoteHtml);
+      continue;
+    }
+
+    // Paragraph
+    if (line.trim() !== "") {
+      result.push(`<p>${parseInlineMarkdown(line)}</p>`);
+    }
+
+    i++;
+  }
+
+  return result.join("\n");
+}

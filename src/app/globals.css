@@ -126,3 +126,69 @@
     scrollbar-width: none;
   }
 }
+
+/* Typography Overrides (Prose) */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.prose thead {
+  background-color: oklch(0.15 0.01 0); /* Matches card background */
+  border-bottom: 2px solid var(--border);
+}
+
+.prose th {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--foreground) !important;
+}
+
+.prose td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground) !important;
+}
+
+.prose tr:last-child td {
+  border-bottom: none;
+}
+
+.prose tbody tr:nth-child(even) {
+  background-color: oklch(1 0 0 / 2%);
+}
+
+/* List spacing overrides to keep bullets tighter and prevent paragraph gaps */
+.prose ul,
+.prose ol {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+  padding-left: 1.5rem !important;
+}
+
+.prose li {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+  padding-left: 0.25rem !important;
+}
+
+.prose li p,
+.prose li > p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  line-height: inherit !important;
+}
+
+.prose li ul,
+.prose li ol {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+}
+

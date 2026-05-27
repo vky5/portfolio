@@ -24,7 +24,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
   const activeChapter = chapters[activeChapterIndex];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row">
+    <div className="h-screen bg-background flex flex-col md:flex-row md:overflow-hidden">
       {/* Mobile Header for Sidebar Toggle */}
       <div className="md:hidden bg-card border-b border-border p-4 sticky top-0 z-30 flex justify-between items-center">
         <Button
@@ -48,7 +48,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
         className={cn(
           "bg-card border-r border-border flex-shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto no-scrollbar transition-all duration-300 ease-in-out z-20",
           "w-full md:w-80 lg:w-96", // Widths
-          "fixed md:relative top-[57px] md:top-0 bottom-0 md:bottom-auto", // Positioning: Fixed on mobile below header
+          "fixed md:sticky top-[57px] md:top-0 bottom-0 md:bottom-auto", // Positioning: Fixed on mobile, sticky on desktop
           isSidebarOpen
             ? "translate-x-0"
             : "-translate-x-full md:translate-x-0", // Hide on mobile if closed, always show on desktop
