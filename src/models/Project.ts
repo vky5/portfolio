@@ -10,6 +10,7 @@ export interface IProject extends Document {
   blogLink?: string;
   icon?: string;
   coverImage?: string;
+  featured: boolean;
   order: number;
 }
 
@@ -23,6 +24,7 @@ const ProjectSchema: Schema = new Schema({
   blogLink: { type: String, default: "" },
   icon: { type: String, default: "" },
   coverImage: { type: String, default: "" },
+  featured: { type: Boolean, default: false },
   order: { type: Number, default: 0 },
 });
 

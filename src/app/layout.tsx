@@ -2,6 +2,13 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { ThemeProvider } from "@/components/theme-provider";
+import { ToastProvider } from "@/hooks/use-toast";
+import { MotionProvider } from "@/components/motion/MotionProvider";
+import PhosphorGrid from "@/components/PhosphorGrid";
+import CommandPalette from "@/components/CommandPalette";
+import Terminal from "@/components/Terminal";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -13,13 +20,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vaibhav Yadav",
+  title: {
+    default: "Vaibhav Yadav — Systems Engineer",
+    template: "%s — Vaibhav Yadav",
+  },
   description:
-    "Portfolio of Vaibhav Yadav - Software Engineer & System Architect",
+    "Systems engineer working on distributed systems, Kubernetes, and the infrastructure modern applications run on.",
 };
-
-import { ThemeProvider } from "@/components/theme-provider";
-import { ToastProvider } from "@/hooks/use-toast";
 
 export default function RootLayout({
   children,
@@ -35,12 +42,16 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          forcedTheme="dark"
           disableTransitionOnChange
         >
-          <ToastProvider>
-            {children}
-          </ToastProvider>
+          <MotionProvider>
+            <ToastProvider>
+              <PhosphorGrid />
+              {children}
+              <CommandPalette />
+              <Terminal />
+            </ToastProvider>
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>

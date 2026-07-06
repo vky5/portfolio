@@ -25,6 +25,7 @@ interface Project {
   blogLink: string;
   icon: string;
   coverImage?: string;
+  featured?: boolean;
 }
 
 export default function ProjectEditor() {
@@ -43,6 +44,7 @@ export default function ProjectEditor() {
   const [blogLink, setBlogLink] = useState("");
   const [icon, setIcon] = useState("Code");
   const [coverImage, setCoverImage] = useState("");
+  const [featured, setFeatured] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   // Tag State
@@ -78,6 +80,7 @@ export default function ProjectEditor() {
     setTags([]);
     setIcon("Code");
     setCoverImage("");
+    setFeatured(false);
   };
 
   const handleEdit = (p: Project) => {
@@ -91,6 +94,7 @@ export default function ProjectEditor() {
     setTags(p.tags || []);
     setIcon(p.icon || "Code");
     setCoverImage(p.coverImage || "");
+    setFeatured(p.featured || false);
   };
 
   const handleAddTag = () => {
@@ -118,6 +122,7 @@ export default function ProjectEditor() {
       blogLink,
       icon,
       coverImage,
+      featured,
     };
 
     const res = await fetch("/api/projects", {
@@ -243,7 +248,15 @@ export default function ProjectEditor() {
                         <GripVertical className="w-4 h-4" />
                       </div>
                       <div className="flex-grow">
-                        <h3 className="font-semibold">{p.title}</h3>
+                        <h3 className="font-semibold flex items-center gap-2">
+                          {p.title}
+                          {p.featured && (
+                            <span
+                              className="h-1.5 w-1.5 rounded-full bg-primary"
+                              title="Featured on homepage"
+                            />
+                          )}
+                        </h3>
                         <p className="text-xs text-muted-foreground">{p.year}</p>
                       </div>
                       <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -387,6 +400,22 @@ export default function ProjectEditor() {
                   onChange={(e) => setBlogLink(e.target.value)}
                 />
               </div>
+
+              <label className="flex items-center gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={featured}
+                  onChange={(e) => setFeatured(e.target.checked)}
+                  className="h-4 w-4 accent-[var(--primary)]"
+                />
+                <span className="text-sm">
+                  <span className="font-medium">Featured</span>
+                  <span className="text-muted-foreground">
+                    {" "}
+                    — shows on the homepage (all projects appear on /projects)
+                  </span>
+                </span>
+              </label>
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={resetForm}>

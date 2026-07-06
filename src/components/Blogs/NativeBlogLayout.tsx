@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ReadingProgress } from "@/components/motion/ReadingProgress";
 
 interface NativeBlogLayoutProps {
   blog: BlogPost;
@@ -86,11 +87,12 @@ export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background py-16 px-4 sm:px-6 lg:px-8">
+      <ReadingProgress />
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
         <div className="flex-grow max-w-3xl w-full">
           <Button
             variant="ghost"
-            onClick={() => router.push("/?slide=blogs")}
+            onClick={() => router.push("/#writing")}
             className="mb-8 pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -158,7 +160,7 @@ export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
 
             <div
               ref={contentRef}
-              className="prose-content prose prose-orange md:prose-lg dark:prose-invert max-w-none text-muted-foreground/90 leading-relaxed
+              className="prose-content prose md:prose-lg dark:prose-invert max-w-none text-muted-foreground/90 leading-relaxed
                   prose-headings:font-semibold prose-headings:text-foreground
                   prose-p:mb-6 prose-p:leading-8
                   prose-strong:text-foreground

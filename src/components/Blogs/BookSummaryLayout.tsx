@@ -109,7 +109,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
       <div className="md:hidden bg-card border-b border-border p-4 sticky top-0 z-30 flex justify-between items-center">
         <Button
           variant="ghost"
-          onClick={() => router.push("/?slide=blogs")}
+          onClick={() => router.push("/#writing")}
           className="pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -137,7 +137,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
         <div className="p-6">
           <Button
             variant="ghost"
-            onClick={() => router.push("/?slide=blogs")}
+            onClick={() => router.push("/#writing")}
             className="mb-8 pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Blogs

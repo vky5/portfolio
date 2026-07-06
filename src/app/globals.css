@@ -44,79 +44,108 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/*
+ * Accent: P3 phosphor amber — the color of amber CRT terminal text.
+ * It is the only accent in the system; everything else is neutral.
+ */
 :root {
   --radius: 0.625rem;
-  /* Premium Dark Theme Variables (Forced) */
-  --background: oklch(0.12 0 0); /* Ultra deep charcoal */
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.15 0.01 0); /* Subtle card lift */
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.14 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.7 0.25 45); /* Vibrant engineering orange */
-  --primary-foreground: oklch(0.12 0 0);
-  --secondary: oklch(0.18 0.02 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.18 0.02 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.18 0.02 0);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.6 0.2 25);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.7 0.25 45 / 30%);
-  
-  --chart-1: oklch(0.7 0.25 45);
-  --chart-2: oklch(0.6 0.1 200);
-  --chart-3: oklch(0.5 0.1 250);
-  --chart-4: oklch(0.8 0.15 80);
-  --chart-5: oklch(0.7 0.15 30);
-  
-  --sidebar: oklch(0.13 0 0);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.7 0.25 45);
-  --sidebar-primary-foreground: oklch(0.12 0 0);
-  --sidebar-accent: oklch(0.18 0.02 0);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.7 0.25 45 / 30%);
+
+  /* Light — warm paper, bronze-amber accent (contrast-safe on light) */
+  --background: oklch(0.985 0.003 80);
+  --foreground: oklch(0.2 0.01 80);
+  --card: oklch(0.97 0.004 80);
+  --card-foreground: oklch(0.2 0.01 80);
+  --popover: oklch(0.985 0.003 80);
+  --popover-foreground: oklch(0.2 0.01 80);
+  --primary: oklch(0.55 0.13 70);
+  --primary-foreground: oklch(0.985 0.003 80);
+  --secondary: oklch(0.94 0.005 80);
+  --secondary-foreground: oklch(0.2 0.01 80);
+  --muted: oklch(0.94 0.005 80);
+  --muted-foreground: oklch(0.45 0.01 80);
+  --accent: oklch(0.94 0.005 80);
+  --accent-foreground: oklch(0.2 0.01 80);
+  --destructive: oklch(0.55 0.2 25);
+  --border: oklch(0 0 0 / 10%);
+  --input: oklch(0 0 0 / 8%);
+  --ring: oklch(0.55 0.13 70 / 40%);
+
+  --chart-1: oklch(0.55 0.13 70);
+  --chart-2: oklch(0.5 0.05 80);
+  --chart-3: oklch(0.6 0.03 80);
+  --chart-4: oklch(0.7 0.02 80);
+  --chart-5: oklch(0.4 0.06 75);
+
+  --sidebar: oklch(0.97 0.004 80);
+  --sidebar-foreground: oklch(0.2 0.01 80);
+  --sidebar-primary: oklch(0.55 0.13 70);
+  --sidebar-primary-foreground: oklch(0.985 0.003 80);
+  --sidebar-accent: oklch(0.94 0.005 80);
+  --sidebar-accent-foreground: oklch(0.2 0.01 80);
+  --sidebar-border: oklch(0 0 0 / 10%);
+  --sidebar-ring: oklch(0.55 0.13 70 / 40%);
 }
 
-/* Explicit .dark for compatibility, matching :root */
 .dark {
-  --background: oklch(0.12 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.15 0.01 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.14 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.7 0.25 45);
-  --primary-foreground: oklch(0.12 0 0);
-  --secondary: oklch(0.20 0.02 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.20 0.02 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.20 0.02 0);
-  --accent-foreground: oklch(0.98 0 0);
+  /* Dark — black glass, phosphor amber */
+  --background: oklch(0.13 0.004 80);
+  --foreground: oklch(0.95 0.005 80);
+  --card: oklch(0.16 0.005 80);
+  --card-foreground: oklch(0.95 0.005 80);
+  --popover: oklch(0.15 0.005 80);
+  --popover-foreground: oklch(0.95 0.005 80);
+  --primary: oklch(0.78 0.16 75);
+  --primary-foreground: oklch(0.13 0.004 80);
+  --secondary: oklch(0.19 0.006 80);
+  --secondary-foreground: oklch(0.95 0.005 80);
+  --muted: oklch(0.19 0.006 80);
+  --muted-foreground: oklch(0.68 0.008 80);
+  --accent: oklch(0.19 0.006 80);
+  --accent-foreground: oklch(0.95 0.005 80);
   --destructive: oklch(0.6 0.2 25);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.7 0.25 45 / 30%);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 8%);
+  --ring: oklch(0.78 0.16 75 / 40%);
+
+  --chart-1: oklch(0.78 0.16 75);
+  --chart-2: oklch(0.7 0.05 80);
+  --chart-3: oklch(0.6 0.03 80);
+  --chart-4: oklch(0.5 0.02 80);
+  --chart-5: oklch(0.85 0.1 80);
+
+  --sidebar: oklch(0.145 0.004 80);
+  --sidebar-foreground: oklch(0.95 0.005 80);
+  --sidebar-primary: oklch(0.78 0.16 75);
+  --sidebar-primary-foreground: oklch(0.13 0.004 80);
+  --sidebar-accent: oklch(0.19 0.006 80);
+  --sidebar-accent-foreground: oklch(0.95 0.005 80);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.78 0.16 75 / 40%);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-foreground selection:bg-primary/30 selection:text-foreground;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    @apply bg-background text-foreground selection:bg-primary/25 selection:text-foreground;
   }
-  body::-webkit-scrollbar {
-    display: none;
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 }
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -140,7 +169,7 @@
 }
 
 .prose thead {
-  background-color: oklch(0.15 0.01 0); /* Matches card background */
+  background-color: var(--card);
   border-bottom: 2px solid var(--border);
 }
 
@@ -162,7 +191,7 @@
 }
 
 .prose tbody tr:nth-child(even) {
-  background-color: oklch(1 0 0 / 2%);
+  background-color: oklch(0.5 0 0 / 4%);
 }
 
 /* List spacing overrides to keep bullets tighter and prevent paragraph gaps */
@@ -227,7 +256,6 @@
   font-weight: 600 !important;
   margin-top: 1.5rem !important;
   margin-bottom: 0.75rem !important;
-  color: oklch(0.9 0 0) !important;
 }
 
 .prose h4 {
@@ -235,7 +263,6 @@
   font-weight: 600 !important;
   margin-top: 1.25rem !important;
   margin-bottom: 0.5rem !important;
-  color: oklch(0.8 0 0) !important;
 }
 
 .prose h1,
@@ -244,4 +271,3 @@
 .prose h4 {
   scroll-margin-top: 5rem !important;
 }
-
