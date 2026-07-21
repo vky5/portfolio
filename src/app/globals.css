@@ -283,3 +283,17 @@
   height: auto;
   margin: 0 auto;
 }
+
+.mermaid-figure.mermaid-error {
+  border: 1px solid var(--destructive);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.mermaid-error-msg {
+  color: var(--destructive);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
