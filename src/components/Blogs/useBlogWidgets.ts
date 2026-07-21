@@ -12,9 +12,12 @@ import { widgetRegistry } from "./widgets/registry";
  *   ```<widgetKey>  → a registered React widget mounted in place
  *   anything else   → left as a normal code block
  *
- * This generalises the old useMermaid hook: mermaid is now just one branch.
- * Both channels ride Tiptap code blocks, the only markup proven to survive the
- * editor → Mongo → dangerouslySetInnerHTML round-trip.
+ * Self-healing: React can re-apply the container's dangerouslySetInnerHTML on
+ * a re-render, restoring the raw blocks after we have transformed them
+ * (confirmed via stack trace: commitHostUpdate → set innerHTML). A
+ * MutationObserver on the container re-runs processing whenever raw blocks
+ * reappear. Processing is idempotent — once everything is converted there is
+ * nothing left to match, so the observer settles.
  */
 
 let seq = 0;
@@ -46,6 +49,13 @@ function healQuotedNewlines(src: string): string {
   return out;
 }
 
+const WIDGET_KEYS = Object.keys(widgetRegistry);
+
+function hasPendingBlocks(container: HTMLElement): boolean {
+  if (container.querySelector("code.language-mermaid")) return true;
+  return WIDGET_KEYS.some((k) => container.querySelector(`code.language-${k}`));
+}
+
 export function useBlogWidgets(
   ref: RefObject<HTMLElement | null>,
   deps: DependencyList,
@@ -54,18 +64,19 @@ export function useBlogWidgets(
     let cancelled = false;
     const container = ref.current;
     if (!container) return;
-    // Roots created for React widgets — must be unmounted on cleanup so a
-    // chapter/content change does not leak detached trees.
+
+    // React roots created for widgets — unmounted on cleanup so a chapter or
+    // content change does not leak detached trees.
     const roots: { unmount: () => void }[] = [];
 
     const renderMermaid = async () => {
       const pending = container.querySelectorAll<HTMLElement>(
         "code.language-mermaid",
       );
-      const rerender = container.querySelectorAll<HTMLElement>(
-        "figure[data-mermaid-src]",
+      const empties = container.querySelectorAll<HTMLElement>(
+        "figure[data-mermaid-src]:empty",
       );
-      if (pending.length === 0 && rerender.length === 0) return;
+      if (pending.length === 0 && empties.length === 0) return;
 
       const mermaid = (await import("mermaid")).default;
       if (cancelled) return;
@@ -112,58 +123,110 @@ export function useBlogWidgets(
       for (const code of pending) {
         await draw(code.closest("pre") ?? code, code.textContent ?? "");
       }
-      for (const fig of rerender) {
+      for (const fig of empties) {
         await draw(fig, fig.dataset.mermaidSrc ?? "");
       }
     };
 
-    const mountWidgets = async () => {
-      const { createRoot } = await import("react-dom/client");
-      if (cancelled) return;
+    const remermaidOnThemeFlip = async () => {
+      const figs = container.querySelectorAll<HTMLElement>(
+        "figure[data-mermaid-src]",
+      );
+      for (const fig of figs) fig.innerHTML = "";
+      await renderMermaid();
+    };
 
-      for (const key of Object.keys(widgetRegistry)) {
+    const mountWidgets = async () => {
+      for (const key of WIDGET_KEYS) {
         const blocks = container.querySelectorAll<HTMLElement>(
           `code.language-${key}`,
         );
         for (const code of blocks) {
           const target = code.closest("pre") ?? code;
-          const raw = (code.textContent ?? "").trim();
-          let props: Record<string, unknown> = {};
-          if (raw.startsWith("{")) {
-            try {
-              props = JSON.parse(raw);
-            } catch {
-              // Ignore malformed props; render the widget with defaults.
-            }
+          const marker = document.createElement("div");
+          marker.dataset.widget = key;
+          marker.dataset.props = (code.textContent ?? "").trim();
+          target.replaceWith(marker);
+        }
+      }
+
+      const markers = container.querySelectorAll<HTMLElement>("[data-widget]");
+      if (markers.length === 0) return;
+
+      const { createRoot } = await import("react-dom/client");
+      if (cancelled) return;
+
+      for (const marker of markers) {
+        const key = marker.dataset.widget ?? "";
+        if (!widgetRegistry[key]) continue;
+        if (marker.childElementCount > 0) continue; // already live
+
+        const raw = marker.dataset.props ?? "";
+        let props: Record<string, unknown> = {};
+        if (raw.startsWith("{")) {
+          try {
+            props = JSON.parse(raw);
+          } catch {
+            // Malformed props: render the widget with defaults.
           }
+        }
 
-          const mount = document.createElement("div");
-          mount.dataset.widget = key;
-          target.replaceWith(mount);
-
+        try {
           const mod = await widgetRegistry[key]();
           if (cancelled) return;
-          const root = createRoot(mount);
+          if (marker.childElementCount > 0) continue;
+          const root = createRoot(marker);
           root.render(createElement(mod.default, props));
           roots.push(root);
+        } catch (err) {
+          console.error(`[widgets] failed to mount ${key}:`, err);
         }
       }
     };
 
-    renderMermaid();
-    mountWidgets();
+    // Serialized, coalescing processor: never two passes in flight; a reset
+    // arriving mid-pass queues exactly one follow-up.
+    let inFlight = false;
+    let rerunWanted = false;
+    const processAll = async () => {
+      if (cancelled) return;
+      if (inFlight) {
+        rerunWanted = true;
+        return;
+      }
+      inFlight = true;
+      try {
+        await renderMermaid();
+        await mountWidgets();
+      } finally {
+        inFlight = false;
+        if (rerunWanted && !cancelled) {
+          rerunWanted = false;
+          processAll();
+        }
+      }
+    };
 
-    // Mermaid re-renders in the matching palette on theme flips. Widgets are
-    // already CSS-var themed, so they need no re-mount.
-    const observer = new MutationObserver(() => renderMermaid());
-    observer.observe(document.documentElement, {
+    processAll();
+
+    // Self-heal: if the container's HTML is reset (raw blocks reappear),
+    // re-process. Our own mutations also fire this, but by then nothing is
+    // pending, so it no-ops and the observer settles.
+    const healObserver = new MutationObserver(() => {
+      if (hasPendingBlocks(container)) processAll();
+    });
+    healObserver.observe(container, { childList: true, subtree: true });
+
+    const themeObserver = new MutationObserver(() => remermaidOnThemeFlip());
+    themeObserver.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class"],
     });
 
     return () => {
       cancelled = true;
-      observer.disconnect();
+      healObserver.disconnect();
+      themeObserver.disconnect();
       for (const root of roots) root.unmount();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -91,10 +91,15 @@ export default function AuthFlowDiagram() {
     <div ref={ref} className="not-prose my-8 w-full">
       <svg
         viewBox="0 0 720 560"
-        className="w-full h-auto"
         role="img"
         aria-label="Request lifecycle: User to API Gateway to Auth Service to Application to PostgreSQL and Redis, then Response back to User."
-        style={{ fontFamily: "var(--font-mono, monospace)" }}
+        style={{
+          width: "100%",
+          height: "auto",
+          aspectRatio: "720 / 560",
+          display: "block",
+          fontFamily: "var(--font-mono, monospace)",
+        }}
       >
         <defs>
           <marker
