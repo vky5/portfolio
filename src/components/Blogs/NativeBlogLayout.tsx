@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReadingProgress } from "@/components/motion/ReadingProgress";
-import { useMermaid } from "@/components/Blogs/useMermaid";
+import { useBlogWidgets } from "@/components/Blogs/useBlogWidgets";
 
 interface NativeBlogLayoutProps {
   blog: BlogPost;
@@ -21,7 +21,7 @@ export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
   const [activeHeadingId, setActiveHeadingId] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
 
-  useMermaid(contentRef, [blog.content]);
+  useBlogWidgets(contentRef, [blog.content]);
 
   useEffect(() => {
     const container = contentRef.current;

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, BookOpen, ChevronRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { useMermaid } from "@/components/Blogs/useMermaid";
+import { useBlogWidgets } from "@/components/Blogs/useBlogWidgets";
 
 interface BookSummaryLayoutProps {
   blog: BlogPost;
@@ -22,7 +22,7 @@ export default function BookSummaryLayout({ blog }: BookSummaryLayoutProps) {
   const [activeHeadingId, setActiveHeadingId] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
 
-  useMermaid(contentRef, [activeChapterIndex, blog.bookData]);
+  useBlogWidgets(contentRef, [activeChapterIndex, blog.bookData]);
 
   if (!blog.bookData || !blog.bookData.chapters.length) return null;
 
