@@ -63,6 +63,9 @@ export function useMermaid(
       const rerender = container.querySelectorAll<HTMLElement>(
         "figure[data-mermaid-src]",
       );
+      console.log(
+        `[mermaid] hook running — ${pending.length} pending, ${rerender.length} to re-render`,
+      );
       if (pending.length === 0 && rerender.length === 0) return;
 
       const mermaid = (await import("mermaid")).default;
