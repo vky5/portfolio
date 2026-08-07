@@ -1,5 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+export interface ExperienceLink {
+  label: string;
+  url: string;
+}
+
 export interface IExperience extends Document {
   role: string;
   company: string;
@@ -9,7 +14,10 @@ export interface IExperience extends Document {
   description: string;
   highlights: string[];
   skills: string[];
-  type: "work" | "achievement";
+  // opensource: project contributions with no employer relationship — same
+  // shape as work, plus `links` for the individual PRs.
+  type: "work" | "achievement" | "opensource";
+  links?: ExperienceLink[];
 }
 
 const ExperienceSchema: Schema = new Schema({
@@ -24,7 +32,15 @@ const ExperienceSchema: Schema = new Schema({
   description: { type: String, default: "" },
   highlights: { type: [String], default: [] },
   skills: { type: [String], default: [] },
-  type: { type: String, enum: ["work", "achievement"], required: true },
+  type: {
+    type: String,
+    enum: ["work", "achievement", "opensource"],
+    required: true,
+  },
+  links: {
+    type: [{ label: { type: String }, url: { type: String } }],
+    default: [],
+  },
 });
 
 export default mongoose.models.Experience ||
