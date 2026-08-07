@@ -4,6 +4,11 @@ import Project from "@/models/Project";
 import Blog from "@/models/Blog";
 import type { BlogPost } from "@/data/blogs";
 
+export interface ExperienceLink {
+  label: string;
+  url: string;
+}
+
 export interface ExperienceItem {
   _id: string;
   role: string;
@@ -13,7 +18,8 @@ export interface ExperienceItem {
   description: string;
   highlights: string[];
   skills: string[];
-  type: "work" | "achievement";
+  type: "work" | "achievement" | "opensource";
+  links?: ExperienceLink[];
 }
 
 export interface ProjectItem {

@@ -19,9 +19,14 @@ import {
 } from "@/components/ui/select";
 import { Loader } from "@/components/ui/Loader";
 
+interface ExperienceLink {
+  label: string;
+  url: string;
+}
+
 interface ExperienceItem {
   _id?: string;
-  type: "work" | "achievement";
+  type: "work" | "achievement" | "opensource";
   role: string;
   company: string;
   logo?: string;
@@ -29,6 +34,7 @@ interface ExperienceItem {
   description: string;
   highlights?: string[];
   skills: string[];
+  links?: ExperienceLink[];
 }
 
 export default function ExperienceManager() {
@@ -39,7 +45,9 @@ export default function ExperienceManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form State
-  const [type, setType] = useState<"work" | "achievement">("work");
+  const [type, setType] = useState<"work" | "achievement" | "opensource">(
+    "work",
+  );
   const [role, setRole] = useState("");
   const [company, setCompany] = useState("");
   const [logo, setLogo] = useState("");
@@ -53,6 +61,11 @@ export default function ExperienceManager() {
   // Highlights State
   const [highlightInput, setHighlightInput] = useState("");
   const [highlights, setHighlights] = useState<string[]>([]);
+
+  // Links State (opensource: individual PR/contribution links)
+  const [linkLabelInput, setLinkLabelInput] = useState("");
+  const [linkUrlInput, setLinkUrlInput] = useState("");
+  const [links, setLinks] = useState<ExperienceLink[]>([]);
 
   useEffect(() => {
     const token = sessionStorage.getItem("admin_token");
@@ -82,6 +95,7 @@ export default function ExperienceManager() {
     setDescription("");
     setSkills([]);
     setHighlights([]);
+    setLinks([]);
   };
 
   const handleEdit = (p: ExperienceItem) => {
@@ -94,6 +108,7 @@ export default function ExperienceManager() {
     setDescription(p.description);
     setSkills(p.skills || []);
     setHighlights(p.highlights || []);
+    setLinks(p.links || []);
   };
 
   const handleAddTag = () => {
@@ -119,6 +134,19 @@ export default function ExperienceManager() {
     setHighlights(highlights.filter((_, i) => i !== idx));
   };
 
+  // Links Logic
+  const handleAddLink = () => {
+    if (linkLabelInput.trim() && linkUrlInput.trim()) {
+      setLinks([...links, { label: linkLabelInput.trim(), url: linkUrlInput.trim() }]);
+      setLinkLabelInput("");
+      setLinkUrlInput("");
+    }
+  };
+
+  const removeLink = (idx: number) => {
+    setLinks(links.filter((_, i) => i !== idx));
+  };
+
   const handleSave = async () => {
     if (!role) return toastInfo("Role/Title required");
 
@@ -132,6 +160,7 @@ export default function ExperienceManager() {
       description,
       highlights,
       skills,
+      links,
     };
 
     const res = await fetch("/api/experience", {
@@ -249,7 +278,9 @@ export default function ExperienceManager() {
             <CardContent className="space-y-4">
               <Select
                 value={type}
-                onValueChange={(v) => setType(v as "work" | "achievement")}
+                onValueChange={(v) =>
+                  setType(v as "work" | "achievement" | "opensource")
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Type" />
@@ -257,20 +288,29 @@ export default function ExperienceManager() {
                 <SelectContent>
                   <SelectItem value="work">Work Experience</SelectItem>
                   <SelectItem value="achievement">Achievement/Award</SelectItem>
+                  <SelectItem value="opensource">Open Source Contribution</SelectItem>
                 </SelectContent>
               </Select>
 
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   placeholder={
-                    type === "work" ? "Role / Job Title" : "Achievement Title"
+                    type === "work"
+                      ? "Role / Job Title"
+                      : type === "opensource"
+                        ? "Contribution area (e.g. Scheduler, client auth)"
+                        : "Achievement Title"
                   }
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                 />
                 <Input
                   placeholder={
-                    type === "work" ? "Company Name" : "Organization / Event"
+                    type === "work"
+                      ? "Company Name"
+                      : type === "opensource"
+                        ? "Project / Repo (e.g. HashiCorp Nomad)"
+                        : "Organization / Event"
                   }
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
@@ -313,6 +353,48 @@ export default function ExperienceManager() {
                   Format: Month Year - Month Year (or Present)
                 </p>
               </div>
+
+              {type === "opensource" && (
+                <div className="space-y-2 border p-3 rounded-md bg-muted/20">
+                  <h3 className="text-sm font-medium">PR / Contribution Links</h3>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Label (e.g. PR #27880)"
+                      value={linkLabelInput}
+                      onChange={(e) => setLinkLabelInput(e.target.value)}
+                      className="w-1/3"
+                    />
+                    <Input
+                      placeholder="https://github.com/..."
+                      value={linkUrlInput}
+                      onChange={(e) => setLinkUrlInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleAddLink()}
+                    />
+                    <Button onClick={handleAddLink} size="sm" variant="secondary">
+                      Add
+                    </Button>
+                  </div>
+                  <ul className="space-y-1 mt-2">
+                    {links.map((l, i) => (
+                      <li
+                        key={i}
+                        className="flex justify-between items-center text-sm bg-background p-2 rounded border"
+                      >
+                        <span className="truncate">
+                          <span className="font-medium">{l.label}</span>{" "}
+                          <span className="text-muted-foreground">{l.url}</span>
+                        </span>
+                        <button
+                          onClick={() => removeLink(i)}
+                          className="text-red-500 hover:text-red-700 ml-2 shrink-0"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <Textarea
                 placeholder="Short Summary / Description"

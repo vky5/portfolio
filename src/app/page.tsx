@@ -4,6 +4,7 @@ import { getContributions } from "@/lib/github";
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
 import ExperienceSection from "@/components/sections/Experience";
+import OpenSourceSection from "@/components/sections/OpenSource";
 import ActivitySection from "@/components/sections/Activity";
 import ProjectsSection from "@/components/sections/Projects";
 import WritingSection from "@/components/sections/Writing";
@@ -38,6 +39,7 @@ export default async function Portfolio() {
       <main id="main" className="mx-auto max-w-5xl px-6">
         <Hero />
         <ExperienceSection items={experience} />
+        <OpenSourceSection items={experience} />
         <ProjectsSection items={featured} totalCount={projects.length} />
         <ActivitySection contributions={contributions} />
         <WritingSection posts={recentPosts} totalCount={blogs.length} />

@@ -11,6 +11,8 @@ type Props = {
 };
 
 export default function ExperienceSection({ items }: Props) {
+  // Open-source contributions get their own section (see OpenSource.tsx) —
+  // they're not an employer relationship, so they're excluded here.
   const works = items.filter((i) => i.type === "work" || !i.type);
   const achievements = items.filter((i) => i.type === "achievement");
   const ordered = [...works, ...achievements];
@@ -19,7 +21,7 @@ export default function ExperienceSection({ items }: Props) {
   );
   const active = ordered.find((i) => i._id === activeId) ?? ordered[0];
 
-  if (items.length === 0) return null;
+  if (ordered.length === 0) return null;
 
   return (
     <section id="experience" className="scroll-mt-14 py-16 md:py-20">
