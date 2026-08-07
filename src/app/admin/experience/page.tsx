@@ -20,10 +20,11 @@ import {
 import { Loader } from "@/components/ui/Loader";
 
 interface ExperienceItem {
-  id?: string;
+  _id?: string;
   type: "work" | "achievement";
   role: string;
   company: string;
+  logo?: string;
   period: string;
   description: string;
   highlights?: string[];
@@ -41,6 +42,7 @@ export default function ExperienceManager() {
   const [type, setType] = useState<"work" | "achievement">("work");
   const [role, setRole] = useState("");
   const [company, setCompany] = useState("");
+  const [logo, setLogo] = useState("");
   const [period, setPeriod] = useState("");
   const [description, setDescription] = useState("");
 
@@ -75,6 +77,7 @@ export default function ExperienceManager() {
     setType("work");
     setRole("");
     setCompany("");
+    setLogo("");
     setPeriod("");
     setDescription("");
     setSkills([]);
@@ -82,10 +85,11 @@ export default function ExperienceManager() {
   };
 
   const handleEdit = (p: ExperienceItem) => {
-    setEditingId(p.id || null);
+    setEditingId(p._id || null);
     setType(p.type || "work");
     setRole(p.role);
     setCompany(p.company);
+    setLogo(p.logo || "");
     setPeriod(p.period);
     setDescription(p.description);
     setSkills(p.skills || []);
@@ -119,10 +123,11 @@ export default function ExperienceManager() {
     if (!role) return toastInfo("Role/Title required");
 
     const payload = {
-      id: editingId,
+      _id: editingId,
       type,
       role,
       company,
+      logo,
       period,
       description,
       highlights,
@@ -189,8 +194,8 @@ export default function ExperienceManager() {
               ) : (
                 items.map((p) => (
                   <div
-                    key={p.id}
-                    className={`p-4 rounded border cursor-pointer transition-colors ${editingId === p.id ? "bg-primary/10 border-primary/20" : "bg-card hover:bg-white/5"}`}
+                    key={p._id}
+                    className={`p-4 rounded border cursor-pointer transition-colors ${editingId === p._id ? "bg-primary/10 border-primary/20" : "bg-card hover:bg-white/5"}`}
                     onClick={() => handleEdit(p)}
                   >
                     <div className="flex justify-between">
@@ -205,13 +210,26 @@ export default function ExperienceManager() {
                         className="h-4 w-4 text-red-500"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDelete(p.id!);
+                          handleDelete(p._id!);
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
-                    <h3 className="font-semibold mt-1">{p.role}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      {p.logo && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={p.logo}
+                          alt=""
+                          className="h-5 w-5 shrink-0 rounded border border-border object-contain bg-white p-0.5"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      )}
+                      <h3 className="font-semibold">{p.role}</h3>
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {p.company} • {p.period}
                     </p>
@@ -257,6 +275,29 @@ export default function ExperienceManager() {
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                 />
+              </div>
+              <div className="space-y-1">
+                <div className="flex gap-2 items-center">
+                  <Input
+                    placeholder="Logo URL (https://...)"
+                    value={logo}
+                    onChange={(e) => setLogo(e.target.value)}
+                  />
+                  {logo && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={logo}
+                      alt=""
+                      className="h-9 w-9 shrink-0 rounded border border-border object-contain bg-white p-1"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.visibility = "hidden";
+                      }}
+                    />
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground ml-1">
+                  Direct image URL — company logo shown next to the entry
+                </p>
               </div>
               <div className="space-y-1">
                 <Input

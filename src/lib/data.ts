@@ -8,6 +8,7 @@ export interface ExperienceItem {
   _id: string;
   role: string;
   company: string;
+  logo?: string;
   period: string;
   description: string;
   highlights: string[];
@@ -40,7 +41,9 @@ function serialize<T>(docs: unknown): T {
 export async function getExperience(): Promise<ExperienceItem[]> {
   try {
     await dbConnect();
-    const docs = await Experience.find({}).sort({ period: -1 }).lean();
+    const docs = await Experience.find({})
+      .sort({ sortDate: -1, period: -1 })
+      .lean();
     return serialize<ExperienceItem[]>(docs);
   } catch (err) {
     console.error("getExperience failed:", err);

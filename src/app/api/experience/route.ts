@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Experience from "@/models/Experience";
+import { parsePeriodStart } from "@/lib/period";
 
 export async function GET() {
   await dbConnect();
   try {
-    const experiences = await Experience.find({}).sort({ period: -1 });
+    const experiences = await Experience.find({}).sort({ sortDate: -1, period: -1 });
     return NextResponse.json(experiences);
   } catch (error) {
     console.error("Error fetching experiences:", error);
@@ -18,6 +19,9 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
     const { _id, ...rest } = data;
+    if (typeof rest.period === "string") {
+      rest.sortDate = parsePeriodStart(rest.period);
+    }
 
     if (_id) {
       const updatedExperience = await Experience.findByIdAndUpdate(_id, rest, {
