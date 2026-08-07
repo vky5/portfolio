@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import type { ExperienceItem } from "@/lib/data";
 import SectionHeader from "@/components/SectionHeader";
 import { Reveal } from "@/components/motion/Reveal";
@@ -10,55 +11,72 @@ type Props = {
   items: ExperienceItem[];
 };
 
-const COLLAPSED_HEIGHT = 220;
+// Every entry collapses to this exact pixel height, whether its content is
+// short or long — a real `height`, not a `max-height`. Same treatment as
+// Experience's DetailBody, kept as its own component so `expanded` resets
+// for free when AnimatePresence remounts it on tab switch.
+const COLLAPSED_HEIGHT = 200;
 
-// Same collapse-by-default treatment as Experience's DetailBody — kept as
-// its own component so `expanded` resets for free when AnimatePresence
-// remounts it on tab switch.
 function DetailBody({ item }: { item: ExperienceItem }) {
   const [expanded, setExpanded] = useState(false);
+  const [fullHeight, setFullHeight] = useState(COLLAPSED_HEIGHT);
+  const contentRef = useRef<HTMLDivElement>(null);
   const hasBody = Boolean(item.description) || item.highlights?.length > 0;
+  const truncated = fullHeight > COLLAPSED_HEIGHT;
+
+  useLayoutEffect(() => {
+    if (contentRef.current) setFullHeight(contentRef.current.scrollHeight);
+  }, [item]);
 
   return (
     <>
       {hasBody && (
-        <div
+        <motion.div
           className="relative mt-5 overflow-hidden"
-          style={{ maxHeight: expanded ? undefined : COLLAPSED_HEIGHT }}
+          initial={false}
+          animate={{ height: expanded ? fullHeight : COLLAPSED_HEIGHT }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
         >
-          {item.description && (
-            <p className="max-w-[65ch] leading-relaxed text-muted-foreground">
-              {item.description}
-            </p>
-          )}
+          <div ref={contentRef}>
+            {item.description && (
+              <p className="max-w-[65ch] leading-relaxed text-muted-foreground">
+                {item.description}
+              </p>
+            )}
 
-          {item.highlights?.length > 0 && (
-            <ul className="mt-5 space-y-2.5">
-              {item.highlights.map((h, i) => (
-                <li
-                  key={i}
-                  className="flex max-w-[65ch] gap-3 leading-relaxed text-foreground/90"
-                >
-                  <span className="mt-[0.7em] h-px w-3 shrink-0 bg-primary" />
-                  <span>{h}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+            {item.highlights?.length > 0 && (
+              <ul className="mt-5 space-y-2.5">
+                {item.highlights.map((h, i) => (
+                  <li
+                    key={i}
+                    className="flex max-w-[65ch] gap-3 leading-relaxed text-foreground/90"
+                  >
+                    <span className="mt-[0.7em] h-px w-3 shrink-0 bg-primary" />
+                    <span>{h}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-          {!expanded && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-background to-transparent" />
+          {!expanded && truncated && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-background to-transparent" />
           )}
-        </div>
+        </motion.div>
       )}
 
-      {hasBody && (
+      {hasBody && truncated && (
         <button
           type="button"
           onClick={() => setExpanded((e) => !e)}
-          className="mt-4 font-mono text-xs text-primary transition-colors hover:text-foreground"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 font-mono text-xs font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
         >
-          {expanded ? "− collapse" : "+ expand"}
+          {expanded ? "Show less" : "Show more"}
+          <ChevronDown
+            className={`h-3.5 w-3.5 transition-transform duration-300 ${
+              expanded ? "rotate-180" : ""
+            }`}
+          />
         </button>
       )}
 
@@ -119,7 +137,7 @@ export default function OpenSourceSection({ items }: Props) {
                       <img
                         src={item.logo}
                         alt=""
-                        className="h-6 w-6 shrink-0 rounded border border-border/60 bg-muted object-contain p-0.5"
+                        className="h-6 w-6 shrink-0 rounded border border-border/60 bg-zinc-200 object-contain p-0.5"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display =
                             "none";
@@ -162,7 +180,7 @@ export default function OpenSourceSection({ items }: Props) {
                         <img
                           src={active.logo}
                           alt=""
-                          className="h-10 w-10 shrink-0 rounded-md border border-border bg-muted object-contain p-1.5"
+                          className="h-10 w-10 shrink-0 rounded-md border border-border bg-zinc-200 object-contain p-1.5"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display =
                               "none";
