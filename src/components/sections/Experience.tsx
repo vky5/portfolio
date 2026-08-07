@@ -10,6 +10,71 @@ type Props = {
   items: ExperienceItem[];
 };
 
+const COLLAPSED_HEIGHT = 220;
+
+// Description + highlights can run long and vary a lot entry to entry —
+// without a cap the panel height jumps around as you switch tabs. Collapsed
+// by default at a fixed height with a fade + expand button; the button lives
+// right above the skills line since that's the one part that stays short.
+// Declared as its own component (rather than inline in the parent) so the
+// `expanded` state resets for free each time AnimatePresence remounts it on
+// tab switch, instead of leaking across entries.
+function DetailBody({ item }: { item: ExperienceItem }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasBody = Boolean(item.description) || item.highlights?.length > 0;
+
+  return (
+    <>
+      {hasBody && (
+        <div
+          className="relative mt-5 overflow-hidden"
+          style={{ maxHeight: expanded ? undefined : COLLAPSED_HEIGHT }}
+        >
+          {item.description && (
+            <p className="max-w-[65ch] leading-relaxed text-muted-foreground">
+              {item.description}
+            </p>
+          )}
+
+          {item.highlights?.length > 0 && (
+            <ul className="mt-5 space-y-2.5">
+              {item.highlights.map((h, i) => (
+                <li
+                  key={i}
+                  className="flex max-w-[65ch] gap-3 leading-relaxed text-foreground/90"
+                >
+                  <span className="mt-[0.7em] h-px w-3 shrink-0 bg-primary" />
+                  <span>{h}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {!expanded && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-background to-transparent" />
+          )}
+        </div>
+      )}
+
+      {hasBody && (
+        <button
+          type="button"
+          onClick={() => setExpanded((e) => !e)}
+          className="mt-4 font-mono text-xs text-primary transition-colors hover:text-foreground"
+        >
+          {expanded ? "− collapse" : "+ expand"}
+        </button>
+      )}
+
+      {item.skills?.length > 0 && (
+        <p className="mt-6 font-mono text-xs text-muted-foreground">
+          {item.skills.join(" · ")}
+        </p>
+      )}
+    </>
+  );
+}
+
 export default function ExperienceSection({ items }: Props) {
   // Open-source contributions get their own section (see OpenSource.tsx) —
   // they're not an employer relationship, so they're excluded here.
@@ -53,7 +118,7 @@ export default function ExperienceSection({ items }: Props) {
                     <img
                       src={item.logo}
                       alt=""
-                      className="h-6 w-6 shrink-0 rounded border border-border/60 bg-muted object-contain p-0.5 mix-blend-multiply"
+                      className="h-6 w-6 shrink-0 rounded border border-border/60 bg-muted object-contain p-0.5"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = "none";
                       }}
@@ -93,7 +158,7 @@ export default function ExperienceSection({ items }: Props) {
                       <img
                         src={active.logo}
                         alt=""
-                        className="h-10 w-10 shrink-0 rounded-md border border-border bg-muted object-contain p-1.5 mix-blend-multiply"
+                        className="h-10 w-10 shrink-0 rounded-md border border-border bg-muted object-contain p-1.5"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
@@ -109,31 +174,7 @@ export default function ExperienceSection({ items }: Props) {
                     {active.type === "achievement" ? " · achievement" : ""}
                   </p>
 
-                  {active.description && (
-                    <p className="mt-5 max-w-[65ch] leading-relaxed text-muted-foreground">
-                      {active.description}
-                    </p>
-                  )}
-
-                  {active.highlights?.length > 0 && (
-                    <ul className="mt-5 space-y-2.5">
-                      {active.highlights.map((h, i) => (
-                        <li
-                          key={i}
-                          className="flex max-w-[65ch] gap-3 leading-relaxed text-foreground/90"
-                        >
-                          <span className="mt-[0.7em] h-px w-3 shrink-0 bg-primary" />
-                          <span>{h}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {active.skills?.length > 0 && (
-                    <p className="mt-6 font-mono text-xs text-muted-foreground">
-                      {active.skills.join(" · ")}
-                    </p>
-                  )}
+                  <DetailBody item={active} />
                 </motion.article>
               )}
             </AnimatePresence>
