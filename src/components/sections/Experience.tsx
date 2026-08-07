@@ -42,19 +42,32 @@ export default function ExperienceSection({ items }: Props) {
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => setActiveId(item._id)}
-                  className={`shrink-0 rounded-md px-3 py-2.5 text-left transition-colors md:shrink ${
+                  className={`flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2.5 text-left transition-colors md:shrink ${
                     isActive ? "bg-muted" : "hover:bg-muted/50"
                   }`}
                 >
-                  <span className="block font-mono text-[11px] text-muted-foreground">
-                    {item.period}
-                  </span>
-                  <span
-                    className={`block text-sm font-medium ${
-                      isActive ? "text-foreground" : "text-muted-foreground"
-                    }`}
-                  >
-                    {item.type === "achievement" ? item.role : item.company}
+                  {item.logo && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.logo}
+                      alt=""
+                      className="h-6 w-6 shrink-0 rounded border border-border/60 bg-white object-contain p-0.5"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  )}
+                  <span className="min-w-0">
+                    <span className="block font-mono text-[11px] text-muted-foreground">
+                      {item.period}
+                    </span>
+                    <span
+                      className={`block truncate text-sm font-medium ${
+                        isActive ? "text-foreground" : "text-muted-foreground"
+                      }`}
+                    >
+                      {item.type === "achievement" ? item.role : item.company}
+                    </span>
                   </span>
                 </button>
               );
@@ -72,9 +85,22 @@ export default function ExperienceSection({ items }: Props) {
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
                 >
-                  <h3 className="text-xl font-medium tracking-tight text-foreground">
-                    {active.role}
-                  </h3>
+                  <div className="flex items-center gap-3">
+                    {active.logo && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={active.logo}
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded-md border border-border bg-white object-contain p-1.5"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    )}
+                    <h3 className="text-xl font-medium tracking-tight text-foreground">
+                      {active.role}
+                    </h3>
+                  </div>
                   <p className="mt-1 font-mono text-sm text-muted-foreground">
                     {active.company}
                     {active.period ? ` · ${active.period}` : ""}
