@@ -53,7 +53,7 @@ export default function ExperienceSection({ items }: Props) {
                     <img
                       src={item.logo}
                       alt=""
-                      className="h-6 w-6 shrink-0 rounded border border-border/60 bg-white object-contain p-0.5"
+                      className="h-6 w-6 shrink-0 rounded border border-border/60 bg-muted object-contain p-0.5 mix-blend-multiply"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = "none";
                       }}
@@ -93,7 +93,7 @@ export default function ExperienceSection({ items }: Props) {
                       <img
                         src={active.logo}
                         alt=""
-                        className="h-10 w-10 shrink-0 rounded-md border border-border bg-white object-contain p-1.5"
+                        className="h-10 w-10 shrink-0 rounded-md border border-border bg-muted object-contain p-1.5 mix-blend-multiply"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
