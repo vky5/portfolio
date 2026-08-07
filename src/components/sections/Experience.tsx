@@ -11,10 +11,11 @@ type Props = {
   items: ExperienceItem[];
 };
 
-// Every entry collapses to this exact pixel height, whether its content is
-// short or long — a real `height`, not a `max-height`, so the card doesn't
-// grow to fit shorter entries and shrink for longer ones. Only entries whose
-// measured content actually exceeds it get a fade + expand button.
+// Cap on the collapsed panel height. Short entries (e.g. a two-line
+// description, no highlights) render at their natural height — no padding
+// out to this number, which would leave a dead gap above the skills line.
+// It only kicks in as a real ceiling once content would otherwise exceed
+// it, at which point a fade + expand button appear.
 const COLLAPSED_HEIGHT = 200;
 
 // Description + highlights can run long and vary a lot entry to entry —
@@ -42,7 +43,7 @@ function DetailBody({ item }: { item: ExperienceItem }) {
         <motion.div
           className="relative mt-5 overflow-hidden"
           initial={false}
-          animate={{ height: expanded ? fullHeight : COLLAPSED_HEIGHT }}
+          animate={{ height: expanded ? fullHeight : Math.min(fullHeight, COLLAPSED_HEIGHT) }}
           transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
         >
           <div ref={contentRef}>
