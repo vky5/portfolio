@@ -9,13 +9,15 @@ import { useEffect, useRef, useState, type RefObject } from "react";
  * only scroll listener is dead inside the book layout, so we find the actual
  * scroll parent and measure against it.
  *
- * Progress runs 0 when the element's top sits at 85% of the viewport height
- * and 1 when it reaches 15% — i.e. it scrubs while the element crosses the
- * middle band, not only when fully scrolled past.
+ * Progress runs 0 when the element's top sits at 60% of the viewport height
+ * and 1 when it reaches 40% — a tight band straddling the vertical center,
+ * so the transformation itself plays out while the diagram sits in the
+ * comfortable middle of the screen instead of resolving near the top/bottom
+ * edge where it's half-cut-off and easy to scroll past without noticing.
  */
 
-const START = 0.85;
-const END = 0.15;
+const START = 0.6;
+const END = 0.4;
 
 function getScrollParent(node: HTMLElement): HTMLElement | null {
   let el = node.parentElement;

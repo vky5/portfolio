@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { BlogPost } from "@/data/blogs";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -15,75 +15,101 @@ interface NativeBlogLayoutProps {
   blog: BlogPost;
 }
 
+type Heading = { id: string; text: string; level: number };
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+/*
+ * Bakes a stable id="" into every h1–h4 in the raw blog HTML and returns the
+ * heading list alongside it. This used to happen in a useEffect that mutated
+ * the live DOM nodes after mount — but React re-applies this container's
+ * dangerouslySetInnerHTML on some re-renders (confirmed in useBlogWidgets,
+ * same underlying issue), which wipes any id an effect added after the fact
+ * with nothing to notice and redo it. Computing the ids into the HTML string
+ * itself means every re-application already carries them, so there's no
+ * "after mount" step that can lose the race.
+ */
+function withHeadingIds(html: string): { html: string; headings: Heading[] } {
+  const headings: Heading[] = [];
+  const used = new Map<string, number>();
+
+  const out = html.replace(
+    /<h([1-4])([^>]*)>([\s\S]*?)<\/h\1>/g,
+    (_match, levelStr: string, attrs: string, inner: string) => {
+      const level = parseInt(levelStr, 10);
+      const text = inner.replace(/<[^>]+>/g, "").trim();
+      let id = slugify(text) || `heading-${headings.length}`;
+      const seen = used.get(id) ?? 0;
+      used.set(id, seen + 1);
+      if (seen > 0) id = `${id}-${seen}`;
+
+      headings.push({ id, text, level });
+      const cleanAttrs = attrs.replace(/\s*id="[^"]*"/, "");
+      return `<h${level}${cleanAttrs} id="${id}">${inner}</h${level}>`;
+    },
+  );
+
+  return { html: out, headings };
+}
+
 export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
   const router = useRouter();
-  const [headings, setHeadings] = useState<{ id: string; text: string; level: number }[]>([]);
   const [activeHeadingId, setActiveHeadingId] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const { html: processedContent, headings } = useMemo(
+    () => withHeadingIds(blog.content ?? ""),
+    [blog.content],
+  );
+
   useBlogWidgets(contentRef, [blog.content]);
 
+  // ScrollSpy listener. Queries the heading elements once per `headings`
+  // change and rAF-throttles the per-scroll work (was previously a fresh
+  // querySelectorAll + a getBoundingClientRect per heading on every raw
+  // scroll event, uncapped — during a smooth scrollIntoView jump the browser
+  // fires many of those in quick succession, and that much forced layout
+  // work competing with the scroll animation is what read as stutter/
+  // vibration instead of a smooth jump).
   useEffect(() => {
+    if (headings.length === 0) return;
     const container = contentRef.current;
     if (!container) return;
 
-    const timeoutId = setTimeout(() => {
-      const headingElements = container.querySelectorAll("h1, h2, h3, h4");
-      const list: { id: string; text: string; level: number }[] = [];
+    const headingElements = Array.from(
+      container.querySelectorAll<HTMLElement>("h1, h2, h3, h4"),
+    );
 
-      headingElements.forEach((el, idx) => {
-        if (!el.id) {
-          const text = el.textContent || "";
-          const slug = text
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/(^-|-$)/g, "");
-          el.id = slug || `heading-${idx}`;
-        }
-        list.push({
-          id: el.id,
-          text: el.textContent || "",
-          level: parseInt(el.tagName.replace("H", ""), 10),
-        });
-      });
-
-      setHeadings(list);
-    }, 100);
-
-    return () => clearTimeout(timeoutId);
-  }, [blog.content]);
-
-  // ScrollSpy listener
-  useEffect(() => {
-    if (headings.length === 0) return;
-
-    const handleScroll = () => {
-      const container = contentRef.current;
-      if (!container) return;
-
-      const headingElements = container.querySelectorAll("h1, h2, h3, h4");
+    let frame: number | null = null;
+    const compute = () => {
+      frame = null;
       let currentActiveId = "";
-
-      for (let i = 0; i < headingElements.length; i++) {
-        const el = headingElements[i];
-        const rect = el.getBoundingClientRect();
-
+      for (const el of headingElements) {
         // 120px threshold offset for top of viewport scroll
-        if (rect.top <= 120) {
+        if (el.getBoundingClientRect().top <= 120) {
           currentActiveId = el.id;
         } else {
           break;
         }
       }
-
-      if (currentActiveId) {
-        setActiveHeadingId(currentActiveId);
-      }
+      if (currentActiveId) setActiveHeadingId(currentActiveId);
     };
 
-    handleScroll();
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => {
+      if (frame == null) frame = requestAnimationFrame(compute);
+    };
+
+    compute();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      if (frame != null) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [headings]);
 
   if (!blog.content) return null;
@@ -168,7 +194,7 @@ export default function NativeBlogLayout({ blog }: NativeBlogLayoutProps) {
                   prose-p:mb-6 prose-p:leading-8
                   prose-strong:text-foreground
                   prose-a:text-primary hover:prose-a:text-primary/80"
-              dangerouslySetInnerHTML={{ __html: blog.content }}
+              dangerouslySetInnerHTML={{ __html: processedContent }}
             />
           </motion.div>
         </div>

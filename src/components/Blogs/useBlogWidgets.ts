@@ -227,7 +227,15 @@ export function useBlogWidgets(
       cancelled = true;
       healObserver.disconnect();
       themeObserver.disconnect();
-      for (const root of roots) root.unmount();
+      // Deferred, not synchronous: this cleanup can itself run mid-unmount of
+      // an ancestor (e.g. navigating away from the post), and React throws
+      // "Attempted to synchronously unmount a root while React was already
+      // rendering" if a nested createRoot() is torn down inside that same
+      // commit. Pushing it to a macrotask lets the ancestor's unmount finish
+      // first.
+      for (const root of roots) {
+        setTimeout(() => root.unmount(), 0);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);

@@ -9,6 +9,7 @@ export interface IBlog extends Document {
   id: string; // slug
   title: string;
   date: string;
+  sortDate?: Date;
   readTime: string;
   category: string;
   type: "external" | "native-simple" | "native-book";
@@ -31,6 +32,7 @@ const BlogSchema: Schema = new Schema({
   id: { type: String, required: true, unique: true }, // slug
   title: { type: String, required: true },
   date: { type: String, required: true },
+  sortDate: { type: Date },
   readTime: { type: String, required: true },
   category: { type: String, required: true },
   type: {

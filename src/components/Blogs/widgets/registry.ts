@@ -16,4 +16,10 @@ export type WidgetModule = { default: ComponentType<WidgetProps> };
 
 export const widgetRegistry: Record<string, () => Promise<WidgetModule>> = {
   authflow: () => import("./AuthFlowDiagram"),
+  sshkex: () => import("./SshKeyExchangeDiagram"),
+  sshhostkey: () => import("./SshHostKeyDiagram"),
+  sshauth: () => import("./SshAuthDiagram"),
+  netnsconflict: () => import("./NetnsConflictDiagram"),
+  vethping: () => import("./VethPingDiagram"),
+  bridgepath: () => import("./BridgePathDiagram"),
 };

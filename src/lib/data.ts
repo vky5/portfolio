@@ -71,7 +71,7 @@ export async function getProjects(): Promise<ProjectItem[]> {
 export async function getBlogs(): Promise<BlogPost[]> {
   try {
     await dbConnect();
-    const docs = await Blog.find({}).sort({ date: -1 }).lean();
+    const docs = await Blog.find({}).sort({ sortDate: -1, date: -1 }).lean();
     return serialize<BlogPost[]>(docs);
   } catch (err) {
     console.error("getBlogs failed:", err);

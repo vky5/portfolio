@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Blog from "@/models/Blog";
+import { parseBlogDate } from "@/lib/blogDate";
 
 export async function GET() {
   await dbConnect();
   try {
-    const blogs = await Blog.find({}).sort({ date: -1 });
+    const blogs = await Blog.find({}).sort({ sortDate: -1, date: -1 });
     return NextResponse.json(blogs);
   } catch (error) {
     console.error("Error fetching blogs:", error);
@@ -18,6 +19,9 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
     const { id } = data; // Using 'id' for slug
+    if (typeof data.date === "string") {
+      data.sortDate = parseBlogDate(data.date);
+    }
 
     const existingBlog = await Blog.findOne({ id });
     if (existingBlog) {
@@ -41,6 +45,9 @@ export async function PATCH(request: Request) {
   try {
     const updateData = await request.json();
     const { id } = updateData;
+    if (typeof updateData.date === "string") {
+      updateData.sortDate = parseBlogDate(updateData.date);
+    }
 
     if (!id) {
       return NextResponse.json(

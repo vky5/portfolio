@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useRef } from "react";
-import { useSectionProgress } from "./useSectionProgress";
+import { useDiagramPlayback } from "./useDiagramPlayback";
+import { DiagramControls } from "./diagramPrimitives";
 
 /*
  * A hand-built, scroll-scrubbed architecture diagram of a request lifecycle:
@@ -61,7 +62,7 @@ const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 
 export default function AuthFlowDiagram() {
   const ref = useRef<HTMLDivElement>(null);
-  const p = useSectionProgress(ref);
+  const { progress: p, playing, finished, toggle } = useDiagramPlayback(ref);
 
   const geo = useMemo(() => polyline(ROUTE), []);
   const dist = p * geo.total;
@@ -143,8 +144,9 @@ export default function AuthFlowDiagram() {
           </g>
         )}
       </svg>
+      <DiagramControls playing={playing} finished={finished} onToggle={toggle} />
       <p className="mt-3 text-center text-xs text-muted-foreground/70" style={{ fontFamily: "var(--font-mono, monospace)" }}>
-        fig. — request lifecycle · scroll to trace the path
+        fig. — request lifecycle · scroll or press play
       </p>
     </div>
   );
